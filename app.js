@@ -90,6 +90,30 @@ app.post('/rooms/:roomId/assets', (req, res) => {
     });
 });
 
+function checkRoomRequirements(room, standardRoomRequirements) {
+// business logic / requirements initial check
+  let missingAssets = [];
+  standardRoomRequirements.forEach( requirement => {
+    let matchedAssets = room.assets.filter(asset => asset.type === requirement.type);
+    let actualQuantity = matchedAssets.length;
+
+    if (actualQuantity < requirement.quantity) {
+      missingAssets.push({
+        type: requirement.type,
+        required: requirement.quantity,
+        actual: actualQuantity,
+        missing: requirement.quantity - actualQuantity
+      });
+    }
+});
+  
+  const isComplete = missingAssets.length === 0;
+  return {
+    missingAssets: missingAssets,
+    isComplete: isComplete
+  }
+}
+
 app.get('/rooms/:roomId/assets', (req, res) => {
 
    // covert params id string to number
@@ -114,24 +138,8 @@ app.get('/rooms/:roomId/assets', (req, res) => {
     });
   }
 
-  // business logic / requirements initial check
-  let missingAssets = [];
-  standardRoomRequirements.forEach( requirement => {
-    let matchedAssets = room.assets.filter(asset => asset.type === requirement.type);
-    let actualQuantity = matchedAssets.length;
-
-    if (actualQuantity < requirement.quantity) {
-      missingAssets.push({
-        type: requirement.type,
-        required: requirement.quantity,
-        actual: actualQuantity,
-        missing: requirement.quantity - actualQuantity
-      });
-    }
-});
-  
-  const isComplete = missingAssets.length === 0;
-  console.log(missingAssets, "\nisComplete: ", isComplete);
+  const inventoryStatus = checkRoomRequirements(room, standardRoomRequirements);
+  console.log(inventoryStatus);
 
   // respond with found room assets
   return res.status(200).json({
