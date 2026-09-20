@@ -3,6 +3,8 @@ import express from 'express';
 const app = express();
 const port = 3000;
 
+const standardRoomRequirements = { type: "tv", quantity: 1 };
+
 // memory database
 let rooms = [
   {id: 1, number: "101", assets: [] },
@@ -83,6 +85,14 @@ app.get('/rooms/:roomId/assets', (req, res) => {
       success: false,
       message: 'Room not found'
     });
+  }
+
+  // business logic / requirements initial check
+  let matchedAssets = room.assets.filter(asset => asset.type === standardRoomRequirements.type);
+  let actualQuantity = matchedAssets.length;
+  console.log(actualQuantity);
+  if (actualQuantity < standardRoomRequirements.quantity) {
+    console.log("missing assets");
   }
 
   // respond with found room assets
