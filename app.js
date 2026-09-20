@@ -11,6 +11,13 @@ app.get('/', (req, res) => {
   })
 });
 
+app.get('/rooms', (req, res) => {
+  res.json([
+    {id: 1, number: "101"},
+    {id: 2, number: "102"}
+  ])
+});
+
 app.listen(port, () => {
   console.log(`RoomTrack API running on port ${port}`);
 });
