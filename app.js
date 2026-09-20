@@ -21,9 +21,18 @@ const standardRoomRequirements = [
 let rooms = [
   {
     id: 1, number: "101", assets: [
-    { id: 1, type: "tv"},
-    { id: 2, type: "nightstand" },
-    { id: 3, type: "nightstand" }
+    { id: 1, type: "phone"},
+    { id: 2, type: "tv"},
+    { id: 3, type: "microwave" },
+    { id: 4, type: "refrigerator" },
+    { id: 5, type: "coffee_pot" },
+    { id: 6, type: "alarm_clock" },
+    { id: 7, type: "shower_curtain" },
+    { id: 8, type: "bed" },
+    { id: 9, type: "chair" },
+    { id: 10, type: "table" },
+    { id: 11, type: "nightstand" },
+    { id: 12, type: "nightstand" }
   ]
 },
   {id: 2, number: "102", assets: [] }
@@ -120,7 +129,9 @@ app.get('/rooms/:roomId/assets', (req, res) => {
       });
     }
 });
-    console.log(missingAssets);
+  
+  const isComplete = missingAssets.length === 0;
+  console.log(missingAssets, "\nisComplete: ", isComplete);
 
   // respond with found room assets
   return res.status(200).json({
