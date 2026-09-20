@@ -1,0 +1,16 @@
+info:
+  name: Rooms
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: localhost:3000/rooms
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
