@@ -61,6 +61,38 @@ app.post('/rooms/:roomId/assets', (req, res) => {
     });
 });
 
+app.get('/rooms/:roomId/assets', (req, res) => {
+
+   // covert params id string to number
+  const roomId = Number(req.params.roomId);
+
+  // check roomId is a positive number
+  if (!Number.isInteger(roomId) || roomId <= 0) {
+      return res.status(400).json({
+          success: false,
+          message: 'Invalid room ID'
+      });
+  }
+
+  // find room by roomId
+  let room = rooms.find((room => room.id === roomId));
+
+  // check roomId exists
+  if (room === undefined) {
+    return res.status(404).json({
+      success: false,
+      message: 'Room not found'
+    });
+  }
+
+  // respond with found room assets
+  return res.status(200).json({
+    message: "Assets retrieved successfully",
+    data: room.assets
+  });
+
+});
+
 app.listen(port, () => {
   console.log(`RoomTrack API running on port ${port}`);
 });
