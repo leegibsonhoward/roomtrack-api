@@ -106,20 +106,26 @@ app.get('/rooms/:roomId/assets', (req, res) => {
   }
 
   // business logic / requirements initial check
+  let missingAssets = [];
   standardRoomRequirements.forEach( requirement => {
     let matchedAssets = room.assets.filter(asset => asset.type === requirement.type);
     let actualQuantity = matchedAssets.length;
-    console.log(`asset: ${requirement.type}, required: ${requirement.quantity}, actual: ${actualQuantity}`);
-    console.log(actualQuantity);
+
     if (actualQuantity < requirement.quantity) {
-      console.log("missing assets");
+      missingAssets.push({
+        type: requirement.type,
+        required: requirement.quantity,
+        actual: actualQuantity,
+        missing: requirement.quantity - actualQuantity
+      });
     }
 });
+    console.log(missingAssets);
 
   // respond with found room assets
   return res.status(200).json({
     message: "Assets retrieved successfully",
-   // data: room.assets
+    data: room.assets
   });
 
 });
