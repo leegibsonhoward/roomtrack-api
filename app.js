@@ -19,7 +19,13 @@ const standardRoomRequirements = [
 
 // memory database
 let rooms = [
-  {id: 1, number: "101", assets: [] },
+  {
+    id: 1, number: "101", assets: [
+    { id: 1, type: "tv"},
+    { id: 2, type: "nightstand" },
+    { id: 3, type: "nightstand" }
+  ]
+},
   {id: 2, number: "102", assets: [] }
 ];
 
@@ -100,19 +106,20 @@ app.get('/rooms/:roomId/assets', (req, res) => {
   }
 
   // business logic / requirements initial check
-  let matchedAssets = room.assets.filter(asset => asset.type === standardRoomRequirements[0].type);
-  let actualQuantity = matchedAssets.length;
-  console.log(actualQuantity);
-  console.log(standardRoomRequirements[0].type)
-
-  if (actualQuantity < standardRoomRequirements[0].quantity) {
-    console.log("missing assets");
-  }
+  standardRoomRequirements.forEach( requirement => {
+    let matchedAssets = room.assets.filter(asset => asset.type === requirement.type);
+    let actualQuantity = matchedAssets.length;
+    console.log(`asset: ${requirement.type}, required: ${requirement.quantity}, actual: ${actualQuantity}`);
+    console.log(actualQuantity);
+    if (actualQuantity < requirement.quantity) {
+      console.log("missing assets");
+    }
+});
 
   // respond with found room assets
   return res.status(200).json({
     message: "Assets retrieved successfully",
-    data: room.assets
+   // data: room.assets
   });
 
 });
