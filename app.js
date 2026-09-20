@@ -3,7 +3,19 @@ import express from 'express';
 const app = express();
 const port = 3000;
 
-const standardRoomRequirements = { type: "tv", quantity: 1 };
+const standardRoomRequirements = [
+  { type: "phone", quantity: 1},
+  { type: "tv", quantity: 1},
+  { type: "microwave", quantity: 1 },
+  { type: "refrigerator", quantity: 1 },
+  { type: "coffee_pot", quantity: 1 },
+  { type: "alarm_clock", quantity: 1 },
+  { type: "shower_curtain", quantity: 1 },
+  { type: "bed", quantity: 1 },
+  { type: "chair", quantity: 1 },
+  { type: "table", quantity: 1 },
+  { type: "nightstand", quantity: 2 }
+];
 
 // memory database
 let rooms = [
@@ -88,10 +100,12 @@ app.get('/rooms/:roomId/assets', (req, res) => {
   }
 
   // business logic / requirements initial check
-  let matchedAssets = room.assets.filter(asset => asset.type === standardRoomRequirements.type);
+  let matchedAssets = room.assets.filter(asset => asset.type === standardRoomRequirements[0].type);
   let actualQuantity = matchedAssets.length;
   console.log(actualQuantity);
-  if (actualQuantity < standardRoomRequirements.quantity) {
+  console.log(standardRoomRequirements[0].type)
+
+  if (actualQuantity < standardRoomRequirements[0].quantity) {
     console.log("missing assets");
   }
 
