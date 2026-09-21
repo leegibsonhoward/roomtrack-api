@@ -78,8 +78,14 @@ app.post("/rooms/:roomId/assets", (req, res) => {
   const flatAssets = rooms.flatMap(room => room.assets);
   // extract asset ids
   const allIds = flatAssets.map(asset => asset.id);
+
   // find highest asset id
-  const highestId = Math.max(...allIds);
+  let highestId;
+  if(allIds.length === 0) {
+    highestId = 0;
+  } else {
+    highestId = Math.max(...allIds);
+  }
 
   // create a new asset object
   const newAsset = {
