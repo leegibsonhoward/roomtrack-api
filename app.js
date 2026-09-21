@@ -74,9 +74,16 @@ app.post("/rooms/:roomId/assets", (req, res) => {
     });
   }
 
+  // flatten all assets across rooms
+  const flatAssets = rooms.flatMap(room => room.assets);
+  // extract asset ids
+  const allIds = flatAssets.map(asset => asset.id);
+  // find highest asset id
+  const highestId = Math.max(...allIds);
+
   // create a new asset object
   const newAsset = {
-    id: +1, // generate a mock incremental ID
+    id: highestId + 1, // incremental Id
     type: req.body.type,
     condition: "good"
   };
