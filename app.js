@@ -75,7 +75,8 @@ app.post("/rooms/:roomId/assets", (req, res) => {
   // create a new asset object
   const newAsset = {
     id: +1, // generate a mock incremental ID
-    name: "t.v",
+    type: "t.v",
+    condition: "good"
   };
 
   // save the new asset into mock database
