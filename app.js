@@ -3,6 +3,8 @@ import express from "express";
 const app = express();
 const port = 3000;
 
+app.use(express.json());
+
 const standardRoomRequirements = [
   { type: "phone", quantity: 1 },
   { type: "tv", quantity: 1 },
@@ -75,7 +77,7 @@ app.post("/rooms/:roomId/assets", (req, res) => {
   // create a new asset object
   const newAsset = {
     id: +1, // generate a mock incremental ID
-    type: "t.v",
+    type: req.body.type,
     condition: "good"
   };
 
