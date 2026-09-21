@@ -87,10 +87,33 @@ app.post("/rooms/:roomId/assets", (req, res) => {
     highestId = Math.max(...allIds);
   }
 
+  const assetType = req.body.type;
+
+  // validate user input is a string and not empty
+  if ( typeof assetType !== "string" ||
+    assetType.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Asset type is required"
+      });
+  }
+
+  const trimmedAssetType = assetType.trim();
+
+  // validate type is allowed
+  const foundRequirement = standardRoomRequirements.find(requirement => requirement.type === trimmedAssetType);
+
+  if (foundRequirement === undefined) {
+    return res.status(400).json({
+        success: false,
+        message: "Asset type not valid"
+      });
+  }
+
   // create a new asset object
   const newAsset = {
     id: highestId + 1, // incremental Id
-    type: req.body.type,
+    type: trimmedAssetType,
     condition: "good"
   };
 
