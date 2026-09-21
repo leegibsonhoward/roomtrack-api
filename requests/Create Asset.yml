@@ -6,6 +6,12 @@ info:
 http:
   method: POST
   url: localhost:3000/rooms/1/assets
+  body:
+    type: json
+    data: |-
+      {
+        "type": "phone"
+      }
   auth: inherit
 
 settings:
