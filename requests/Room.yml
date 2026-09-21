@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: localhost:3000/rooms/1/assets
+  url: localhost:3000/rooms/1
   auth: inherit
 
 settings:
