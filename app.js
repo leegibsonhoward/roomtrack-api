@@ -5,6 +5,8 @@ const port = 3000;
 
 app.use(express.json());
 
+const allowedConditions = ["good", "damaged"];
+
 const standardRoomRequirements = [
   { type: "phone", quantity: 1 },
   { type: "tv", quantity: 1 },
@@ -237,6 +239,78 @@ app.get("/rooms/:roomId/assets", (req, res) => {
     message: "Assets retrieved successfully",
     data: room.assets,
   });
+});
+
+app.patch("/rooms/:roomId/assets/:assetId", (req, res) => {
+  const roomId = Number(req.params.roomId);
+  const assetId = Number(req.params.assetId);
+
+  // check roomId is a positive number
+  if (!Number.isInteger(roomId) || roomId <= 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid room ID",
+    });
+  }
+// check assetId is a positive number
+  if (!Number.isInteger(assetId) || assetId <= 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid asset ID",
+    });
+  }
+
+  // find room by roomId
+  let room = rooms.find((room) => room.id === roomId);
+
+  // check room exists
+  if (room === undefined) {
+    return res.status(404).json({
+      success: false,
+      message: "Room not found",
+    });
+  }
+  let updatedAsset = room.assets.find(asset => asset.id === assetId);
+
+  // check asset exists
+  if (updatedAsset === undefined) {
+    return res.status(404).json({
+      success: false,
+      message: "Asset not found",
+    });
+  }
+
+  let condition = req.body.condition;
+
+  // validate user input is a string and not empty
+  if ( typeof condition !== "string" ||
+    condition.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Asset condition is required"
+      });
+  }
+
+  const trimmedCondition = condition.trim();
+
+  // validate type is allowed
+  const isValidCondition = allowedConditions.includes(trimmedCondition);
+
+if (!isValidCondition) {
+  return res.status(400).json({
+    success: false,
+    message: "Asset condition not valid"
+  });
+}
+  updatedAsset.condition = trimmedCondition;
+
+  // respond with status code 200 (Updated) and return the new item
+  res.status(200).json({
+    success: true,
+    message: "Asset updated successfully",
+    data: updatedAsset,
+  });
+
 });
 
 app.listen(port, () => {
