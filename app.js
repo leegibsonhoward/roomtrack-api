@@ -60,10 +60,11 @@ app.get("/rooms", (req, res) => {
 
 // create asset for room by ID
 app.post("/rooms/:roomId/assets", (req, res) => {
-  let room = rooms.find((room) => room.id == req.params.roomId);
+  const roomId = Number(req.params.roomId);
+
+  let room = rooms.find((room) => room.id === roomId);
   console.log(room);
 
-  const roomId = req.params.roomId;
   let assets = room.assets;
 
   // check if room id exists in database
