@@ -1,0 +1,22 @@
+info:
+  name: Update Asset
+  type: http
+  seq: 6
+
+http:
+  method: PATCH
+  url: localhost:3000/rooms/1/assets/1
+  body:
+    type: json
+    data: |-
+      {
+        "condition": "good"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
