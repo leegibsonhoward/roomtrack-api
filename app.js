@@ -52,6 +52,10 @@ function isValidId(id) {
   return (!Number.isInteger(id) || id <= 0);
 }
 
+function findRoomById(roomId) {
+  return rooms.find((room) => room.id === roomId);
+}
+
 //
 // Routes //////////////////////////////////////////
 //
@@ -72,7 +76,8 @@ app.get("/rooms", (req, res) => {
 app.post("/rooms/:roomId/assets", (req, res) => {
   const roomId = Number(req.params.roomId);
 
-  let room = rooms.find((room) => room.id === roomId);
+  let room = findRoomById(roomId);
+
   console.log(room);
 
   let assets = room.assets;
@@ -188,7 +193,7 @@ app.get("/rooms/:roomId", (req, res) => {
   }
 
   // find room by roomId
-  let room = rooms.find((room) => room.id === roomId);
+  let room = findRoomById(roomId);
 
   // check roomId exists
   if (room === undefined) {
@@ -226,7 +231,7 @@ app.get("/rooms/:roomId/assets", (req, res) => {
   }
 
   // find room by roomId
-  let room = rooms.find((room) => room.id === roomId);
+  let room = findRoomById(roomId);
 
   // check roomId exists
   if (room === undefined) {
@@ -269,7 +274,7 @@ app.patch("/rooms/:roomId/assets/:assetId", (req, res) => {
   }
 
   // find room by roomId
-  let room = rooms.find((room) => room.id === roomId);
+  let room = findRoomById(roomId);
 
   // check room exists
   if (room === undefined) {
@@ -342,7 +347,7 @@ app.get("/rooms/:roomId/assets/:assetId", (req, res) => {
   }
 
   // find room by roomId
-  let room = rooms.find((room) => room.id === roomId);
+  let room = findRoomById(roomId);
 
   // check room exists
   if (room === undefined) {
@@ -392,7 +397,7 @@ app.delete("/rooms/:roomId/assets/:assetId", (req, res) => {
   }
 
   // find room by roomId
-  let room = rooms.find((room) => room.id === roomId);
+  let room = findRoomById(roomId);
 
   // check room exists
   if (room === undefined) {
