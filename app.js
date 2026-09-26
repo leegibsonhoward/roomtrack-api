@@ -73,6 +73,36 @@ function deleteAsset(room, assetId) {
 
 }
 
+function createAsset(room, trimmedAssetType) {
+    // flatten all assets across rooms
+  const flatAssets = rooms.flatMap(room => room.assets);
+  // extract asset ids
+  const allIds = flatAssets.map(asset => asset.id);
+
+  // find highest asset id
+  let highestId;
+  if(allIds.length === 0) {
+    highestId = 0;
+  } else {
+    highestId = Math.max(...allIds);
+  }
+
+  // create a new asset object
+  const newAsset = {
+    id: highestId + 1, // incremental Id
+    type: trimmedAssetType,
+    condition: "good"
+  };
+
+  // save the new asset into in-memory storage
+  room.assets.push(newAsset);
+  
+  console.log(room.assets);
+
+  return newAsset;
+
+}
+
 //
 // Routes //////////////////////////////////////////
 //
@@ -93,33 +123,26 @@ app.get("/rooms", (req, res) => {
 app.post("/rooms/:roomId/assets", (req, res) => {
   const roomId = Number(req.params.roomId);
 
-  let room = findRoomById(roomId);
-
-  console.log(room);
-
-  let assets = room.assets;
-
-  // check if room id exists in database
-  if (!roomId) {
+  // check roomId is a positive number
+  if (isValidId(roomId)) {
     return res.status(400).json({
       success: false,
-      message: "Room is required",
+      message: "Invalid room ID",
     });
   }
 
-  // flatten all assets across rooms
-  const flatAssets = rooms.flatMap(room => room.assets);
-  // extract asset ids
-  const allIds = flatAssets.map(asset => asset.id);
+  let room = findRoomById(roomId);
 
-  // find highest asset id
-  let highestId;
-  if(allIds.length === 0) {
-    highestId = 0;
-  } else {
-    highestId = Math.max(...allIds);
+  // check room exists
+  if (room === undefined) {
+    return res.status(404).json({
+      success: false,
+      message: "Room not found",
+    });
   }
 
+  console.log(room);
+  
   const assetType = req.body.type;
 
   // validate user input is a string and not empty
@@ -143,17 +166,7 @@ app.post("/rooms/:roomId/assets", (req, res) => {
       });
   }
 
-  // create a new asset object
-  const newAsset = {
-    id: highestId + 1, // incremental Id
-    type: trimmedAssetType,
-    condition: "good"
-  };
-
-  // save the new asset into mock database
-  assets.push(newAsset);
-
-  console.log(assets);
+  const newAsset = createAsset(room, trimmedAssetType);
 
   // respond with status code 201 (Created) and return the new item
   res.status(201).json({
