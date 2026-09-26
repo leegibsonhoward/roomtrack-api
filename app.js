@@ -60,6 +60,19 @@ function findAssetById(room, assetId) {
   return room.assets.find((asset) => asset.id === assetId);
 }
 
+function deleteAsset(room, assetId) {
+  let index = room.assets.findIndex(asset => asset.id === assetId);
+
+  if (index === -1) {
+    return undefined;
+  }
+  
+  let deletedAsset = room.assets.splice(index, 1);
+
+  return deletedAsset[0]; // returns object not an array
+
+}
+
 //
 // Routes //////////////////////////////////////////
 //
@@ -412,23 +425,21 @@ app.delete("/rooms/:roomId/assets/:assetId", (req, res) => {
     });
   }
 
-  let index = room.assets.findIndex(asset => asset.id === assetId);
+  let deletedAsset = deleteAsset(room, assetId);
 
   // check asset exists
-  if (index === -1) {
+  if (deletedAsset === undefined) {
     return res.status(404).json({
       success: false,
       message: "Asset not found",
     });
   }
-
-  let deletedAsset = room.assets.splice(index, 1);
   
   // respond with status code 200 and return the deleted asset
   res.status(200).json({
     success: true,
     message: "Asset deleted successfully",
-    data: deletedAsset[0], // return object not an array
+    data: deletedAsset,
   });
 
 });
