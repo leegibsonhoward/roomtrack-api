@@ -56,6 +56,10 @@ function findRoomById(roomId) {
   return rooms.find((room) => room.id === roomId);
 }
 
+function findAssetById(room, assetId) {
+  return room.assets.find((asset) => asset.id === assetId);
+}
+
 //
 // Routes //////////////////////////////////////////
 //
@@ -283,7 +287,8 @@ app.patch("/rooms/:roomId/assets/:assetId", (req, res) => {
       message: "Room not found",
     });
   }
-  let updatedAsset = room.assets.find(asset => asset.id === assetId);
+
+  const updatedAsset = findAssetById(room, assetId);
 
   // check asset exists
   if (updatedAsset === undefined) {
@@ -357,7 +362,7 @@ app.get("/rooms/:roomId/assets/:assetId", (req, res) => {
     });
   }
 
-  let asset = room.assets.find(asset => asset.id === assetId);
+  let asset = findAssetById(room, assetId);
 
   // check asset exists
   if (asset === undefined) {
