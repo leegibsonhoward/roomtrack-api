@@ -103,6 +103,12 @@ function createAsset(room, trimmedAssetType) {
 
 }
 
+function updateAssetCondition(asset, condition) {
+    asset.condition = condition;
+    return asset;
+
+}
+
 //
 // Routes //////////////////////////////////////////
 //
@@ -314,10 +320,10 @@ app.patch("/rooms/:roomId/assets/:assetId", (req, res) => {
     });
   }
 
-  const updatedAsset = findAssetById(room, assetId);
+  const asset = findAssetById(room, assetId);
 
   // check asset exists
-  if (updatedAsset === undefined) {
+  if (asset === undefined) {
     return res.status(404).json({
       success: false,
       message: "Asset not found",
@@ -346,7 +352,8 @@ if (!isValidCondition) {
     message: "Asset condition not valid"
   });
 }
-  updatedAsset.condition = trimmedCondition;
+  
+  const updatedAsset = updateAssetCondition(asset, trimmedCondition);
 
   // respond with status code 200 (Updated) and return the new item
   res.status(200).json({
