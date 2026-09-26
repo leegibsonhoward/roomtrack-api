@@ -45,6 +45,14 @@ let rooms = [
 ];
 
 //
+// Helpers
+//
+// check if id is a valid number
+function isValidId(id) {
+  return (!Number.isInteger(id) || id <= 0);
+}
+
+//
 // Routes //////////////////////////////////////////
 //
 app.get("/", (req, res) => {
@@ -172,7 +180,7 @@ app.get("/rooms/:roomId", (req, res) => {
   const roomId = Number(req.params.roomId);
 
   // check roomId is a positive number
-  if (!Number.isInteger(roomId) || roomId <= 0) {
+  if (isValidId(roomId)) {
     return res.status(400).json({
       success: false,
       message: "Invalid room ID",
@@ -210,7 +218,7 @@ app.get("/rooms/:roomId/assets", (req, res) => {
   const roomId = Number(req.params.roomId);
 
   // check roomId is a positive number
-  if (!Number.isInteger(roomId) || roomId <= 0) {
+  if (isValidId(roomId)) {
     return res.status(400).json({
       success: false,
       message: "Invalid room ID",
@@ -246,14 +254,14 @@ app.patch("/rooms/:roomId/assets/:assetId", (req, res) => {
   const assetId = Number(req.params.assetId);
 
   // check roomId is a positive number
-  if (!Number.isInteger(roomId) || roomId <= 0) {
+  if (isValidId(roomId)) {
     return res.status(400).json({
       success: false,
       message: "Invalid room ID",
     });
   }
 // check assetId is a positive number
-  if (!Number.isInteger(assetId) || assetId <= 0) {
+  if (isValidId(assetId)) {
     return res.status(400).json({
       success: false,
       message: "Invalid asset ID",
@@ -318,7 +326,7 @@ app.get("/rooms/:roomId/assets/:assetId", (req, res) => {
   const assetId = Number(req.params.assetId);
 
   // check roomId is a positive number
-  if (!Number.isInteger(roomId) || roomId <= 0) {
+  if (isValidId(roomId)) {
     return res.status(400).json({
       success: false,
       message: "Invalid room ID",
@@ -326,7 +334,7 @@ app.get("/rooms/:roomId/assets/:assetId", (req, res) => {
   }
 
   // check assetId is a positive number
-  if (!Number.isInteger(assetId) || assetId <= 0) {
+  if (isValidId(assetId)) {
     return res.status(400).json({
       success: false,
       message: "Invalid asset ID",
@@ -368,7 +376,7 @@ app.delete("/rooms/:roomId/assets/:assetId", (req, res) => {
   const assetId = Number(req.params.assetId);
 
   // check roomId is a positive number
-  if (!Number.isInteger(roomId) || roomId <= 0) {
+  if (isValidId(roomId)) {
     return res.status(400).json({
       success: false,
       message: "Invalid room ID",
@@ -376,7 +384,7 @@ app.delete("/rooms/:roomId/assets/:assetId", (req, res) => {
   }
   
   // check assetId is a positive number
-  if (!Number.isInteger(assetId) || assetId <= 0) {
+  if (isValidId(assetId)) {
     return res.status(400).json({
       success: false,
       message: "Invalid asset ID",
