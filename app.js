@@ -324,7 +324,7 @@ app.get("/rooms/:roomId/assets/:assetId", (req, res) => {
       message: "Invalid room ID",
     });
   }
-  
+
   // check assetId is a positive number
   if (!Number.isInteger(assetId) || assetId <= 0) {
     return res.status(400).json({
@@ -359,6 +359,58 @@ app.get("/rooms/:roomId/assets/:assetId", (req, res) => {
     success: true,
     message: "Asset retrieved successfully",
     data: asset,
+  });
+
+});
+
+app.delete("/rooms/:roomId/assets/:assetId", (req, res) => {
+  const roomId = Number(req.params.roomId);
+  const assetId = Number(req.params.assetId);
+
+  // check roomId is a positive number
+  if (!Number.isInteger(roomId) || roomId <= 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid room ID",
+    });
+  }
+  
+  // check assetId is a positive number
+  if (!Number.isInteger(assetId) || assetId <= 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid asset ID",
+    });
+  }
+
+  // find room by roomId
+  let room = rooms.find((room) => room.id === roomId);
+
+  // check room exists
+  if (room === undefined) {
+    return res.status(404).json({
+      success: false,
+      message: "Room not found",
+    });
+  }
+
+  let index = room.assets.findIndex(asset => asset.id === assetId);
+
+  // check asset exists
+  if (index === -1) {
+    return res.status(404).json({
+      success: false,
+      message: "Asset not found",
+    });
+  }
+
+  let deletedAsset = room.assets.splice(index, 1);
+  
+  // respond with status code 200 and return the deleted asset
+  res.status(200).json({
+    success: true,
+    message: "Asset deleted successfully",
+    data: deletedAsset[0], // return object not an array
   });
 
 });
