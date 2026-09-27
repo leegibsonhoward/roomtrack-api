@@ -1,12 +1,14 @@
 import express from "express";
 import { DatabaseSync } from "node:sqlite";
 
-import { checkRoomRequirements } from './src/checkRoomRequirements.js';
+import { checkRoomRequirements } from "./src/checkRoomRequirements.js";
 
+// Express setup
 export const app = express();
+app.use(express.json());
 
+// database setup
 const databasePath = process.env.DB_PATH || "roomtrack.db";
-
 const db = new DatabaseSync(databasePath);
 
 db.exec(`
@@ -26,29 +28,27 @@ db.exec(`
   )
 `);
 
-// Database intial setup seed data
+// Seed data / initialization
 const initialRooms = [
   { id: 1, number: 101 },
   { id: 2, number: 102 },
   { id: 3, number: 103 },
 ];
 
-// database helpers
+// database helper
 function seedRooms() {
   const statement = db.prepare(`
     INSERT OR IGNORE INTO rooms (id, number)
     VALUES (?, ?)
   `);
 
-  initialRooms.forEach((room) => {
+  initialRooms.forEach(room => {
     statement.run(room.id, room.number);
   });
 }
 
 // execute seeding on startup
 seedRooms();
-
-app.use(express.json());
 
 const allowedConditions = ["good", "damaged"];
 
@@ -70,17 +70,20 @@ const standardRoomRequirements = [
 // Helpers
 //
 
+// check if id is a valid number
+function isValidId(id) {
+  return Number.isInteger(id) || id >= 0;
+}
+
 // Get all rooms in database
 function findAllRooms() {
   const statement = db.prepare(`SELECT * FROM rooms`);
   return statement.all();
 }
 
-// SQLite migration helpers 
+// SQLite migration helpers
 function findRoomById(roomId) {
-  const statement = db.prepare(
-  "SELECT * FROM rooms WHERE id = ?"
-);
+  const statement = db.prepare("SELECT * FROM rooms WHERE id = ?");
 
   const room = statement.get(roomId);
 
@@ -96,25 +99,47 @@ function findRoomById(roomId) {
 }
 
 function findAssetsByRoomId(roomId) {
-  const statement = db.prepare(
-    "SELECT * FROM assets WHERE room_id = ?"
-  );
+  const statement = db.prepare("SELECT * FROM assets WHERE room_id = ?");
 
   return statement.all(roomId);
-}
-// check if id is a valid number
-function isValidId(id) {
-  return Number.isInteger(id) || id >= 0;
 }
 
 function findAssetById(room, assetId) {
   const statement = db.prepare(
-    "SELECT * FROM assets WHERE id = ? AND room_id = ?"
+    "SELECT * FROM assets WHERE id = ? AND room_id = ?",
   );
 
   return statement.get(assetId, room.id);
 }
 
+// CREATE
+function createAsset(room, trimmedAssetType) {
+  const statement = db.prepare(`
+    INSERT INTO assets (room_id, type, condition)
+    VALUES (?, ?, ?)  
+  `);
+
+  const result = statement.run(room.id, trimmedAssetType, "good");
+
+  const newAsset = findAssetById(room, result.lastInsertRowid);
+
+  return newAsset;
+}
+
+// UPDATE
+function updateAssetCondition(room, asset, condition) {
+  const statement = db.prepare(`
+    UPDATE assets
+    SET condition = ?
+    WHERE id = ? AND room_id = ?
+  `);
+
+  statement.run(condition, asset.id, room.id);
+
+  return findAssetById(room, asset.id);
+}
+
+// DELETE
 function deleteAsset(room, assetId) {
   let deletedAsset = findAssetById(room, assetId);
 
@@ -130,39 +155,6 @@ function deleteAsset(room, assetId) {
   statement.run(assetId, room.id);
 
   return deletedAsset;
-}
-
-function createAsset(room, trimmedAssetType) {
-  const statement = db.prepare(`
-    INSERT INTO assets (room_id, type, condition)
-    VALUES (?, ?, ?)  
-  `);
-
-  const result = statement.run(
-    room.id,
-    trimmedAssetType,
-    "good"
-  );
-  
-  const newAsset = findAssetById(
-    room,
-    result.lastInsertRowid
-  );
-
-  return newAsset;
-
-}
-
-function updateAssetCondition(room, asset, condition) {
-  const statement = db.prepare(`
-    UPDATE assets
-    SET condition = ?
-    WHERE id = ? AND room_id = ?
-  `);
-  
-  statement.run(condition, asset.id, room.id);
-  
-   return findAssetById(room, asset.id);
 }
 
 //
