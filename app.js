@@ -41,29 +41,6 @@ const standardRoomRequirements = [
   { type: "nightstand", quantity: 2 },
 ];
 
-// memory database
-let rooms = [
-  {
-    id: 1,
-    number: "101",
-    assets: [
-      { id: 1, type: "phone", condition: "good" },
-      { id: 2, type: "tv", condition: "good" },
-      { id: 3, type: "microwave", condition: "good" },
-      { id: 4, type: "refrigerator", condition: "good" },
-      { id: 5, type: "coffee_pot", condition: "good" },
-      { id: 6, type: "alarm_clock", condition: "good" },
-      { id: 7, type: "shower_curtain", condition: "good" },
-      { id: 8, type: "bed", condition: "good" },
-      { id: 9, type: "chair", condition: "good" },
-      { id: 10, type: "table", condition: "good" },
-      { id: 11, type: "nightstand", condition: "good" },
-      { id: 12, type: "nightstand", condition: "good" },
-    ],
-  },
-  { id: 2, number: "102", assets: [] },
-];
-
 //
 // Helpers
 //
