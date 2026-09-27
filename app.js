@@ -68,6 +68,12 @@ let rooms = [
 // Helpers
 //
 
+// Get all rooms in database
+function findAllRooms() {
+  const statement = db.prepare(`SELECT * FROM rooms`);
+  return statement.all();
+}
+
 // SQLite migration helpers 
 function findRoomById(roomId) {
   const statement = db.prepare(
@@ -172,7 +178,13 @@ app.get("/", (req, res) => {
 
 // list all rooms
 app.get("/rooms", (req, res) => {
-  res.json(rooms);
+  const rooms = findAllRooms();
+
+  return res.status(200).json({
+    success: true,
+    message: "Room(s) retrieved successfully",
+    data: rooms,
+  });
 });
 
 // create asset for room by ID
