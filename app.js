@@ -129,8 +129,6 @@ function deleteAsset(room, assetId) {
 
   statement.run(assetId, room.id);
 
-  console.log(deleteAsset);
-
   return deletedAsset;
 }
 
@@ -210,8 +208,6 @@ app.post("/rooms/:roomId/assets", (req, res) => {
       message: "Room not found",
     });
   }
-
-  console.log(room);
 
   const assetType = req.body.type;
 
@@ -307,9 +303,6 @@ app.get("/rooms/:roomId/assets", (req, res) => {
       message: "Room not found",
     });
   }
-
-  const inventoryStatus = checkRoomRequirements(room, standardRoomRequirements);
-  console.log(inventoryStatus);
 
   // respond with found room assets
   return res.status(200).json({
