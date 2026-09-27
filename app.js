@@ -3,8 +3,7 @@ import { DatabaseSync } from "node:sqlite";
 
 import { checkRoomRequirements } from './src/checkRoomRequirements.js';
 
-const app = express();
-const port = 3000;
+export const app = express();
 
 const databasePath = process.env.DB_PATH || "roomtrack.db";
 
@@ -487,8 +486,4 @@ app.delete("/rooms/:roomId/assets/:assetId", (req, res) => {
     message: "Asset deleted successfully",
     data: deletedAsset,
   });
-});
-
-app.listen(port, () => {
-  console.log(`RoomTrack API running on port ${port}`);
 });
