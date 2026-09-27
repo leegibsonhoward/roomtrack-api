@@ -120,32 +120,24 @@ function deleteAsset(room, assetId) {
 }
 
 function createAsset(room, trimmedAssetType) {
-  // flatten all assets across rooms
-  const flatAssets = rooms.flatMap(room => room.assets);
-  // extract asset ids
-  const allIds = flatAssets.map(asset => asset.id);
+  const statement = db.prepare(`
+    INSERT INTO assets (room_id, type, condition)
+    VALUES (?, ?, ?)  
+  `);
 
-  // find highest asset id
-  let highestId;
-  if (allIds.length === 0) {
-    highestId = 0;
-  } else {
-    highestId = Math.max(...allIds);
-  }
-
-  // create a new asset object
-  const newAsset = {
-    id: highestId + 1, // incremental Id
-    type: trimmedAssetType,
-    condition: "good",
-  };
-
-  // save the new asset into in-memory storage
-  room.assets.push(newAsset);
-
-  console.log(room.assets);
+  const result = statement.run(
+    room.id,
+    trimmedAssetType,
+    "good"
+  );
+  
+  const newAsset = findAssetById(
+    room,
+    result.lastInsertRowid
+  );
 
   return newAsset;
+
 }
 
 function updateAssetCondition(asset, condition) {
