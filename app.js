@@ -100,7 +100,11 @@ function isValidId(id) {
 }
 
 function findAssetById(room, assetId) {
-  return room.assets.find(asset => asset.id === assetId);
+  const statement = db.prepare(
+    "SELECT * FROM assets WHERE id = ? AND room_id = ?"
+  );
+
+  return statement.get(assetId, room.id);
 }
 
 function deleteAsset(room, assetId) {
