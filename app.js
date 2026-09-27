@@ -161,7 +161,7 @@ function deleteAsset(room, assetId) {
 // Routes //////////////////////////////////////////
 //
 app.get("/", (req, res) => {
-  res.json({
+  return res.json({
     status: "Ok",
     message: "Welcome to RoomTrack API",
     version: "v1.0.0",
@@ -228,7 +228,7 @@ app.post("/rooms/:roomId/assets", (req, res) => {
   const newAsset = createAsset(room, trimmedAssetType);
 
   // respond with status code 201 (Created) and return the new item
-  res.status(201).json({
+  return res.status(201).json({
     success: true,
     message: "Asset created successfully",
     data: newAsset,
@@ -298,6 +298,7 @@ app.get("/rooms/:roomId/assets", (req, res) => {
 
   // respond with found room assets
   return res.status(200).json({
+    success: true,
     message: "Assets retrieved successfully",
     data: room.assets,
   });
@@ -368,7 +369,7 @@ app.patch("/rooms/:roomId/assets/:assetId", (req, res) => {
   const updatedAsset = updateAssetCondition(room, asset, trimmedCondition);
 
   // respond with status code 200 (Updated) and return the new item
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     message: "Asset updated successfully",
     data: updatedAsset,
@@ -417,7 +418,7 @@ app.get("/rooms/:roomId/assets/:assetId", (req, res) => {
   }
 
   // respond with status code 200 and return the asset
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     message: "Asset retrieved successfully",
     data: asset,
@@ -466,7 +467,7 @@ app.delete("/rooms/:roomId/assets/:assetId", (req, res) => {
   }
 
   // respond with status code 200 and return the deleted asset
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     message: "Asset deleted successfully",
     data: deletedAsset,
