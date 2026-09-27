@@ -25,6 +25,28 @@ db.exec(`
   )
 `);
 
+// Database intial setup seed data
+const initialRooms = [
+  { id: 1, number: 101 },
+  { id: 2, number: 102 },
+  { id: 3, number: 103 },
+];
+
+// database helpers
+function seedRooms() {
+  const statement = db.prepare(`
+    INSERT OR IGNORE INTO rooms (id, number)
+    VALUES (?, ?)
+  `);
+
+  initialRooms.forEach((room) => {
+    statement.run(room.id, room.number);
+  });
+}
+
+// execute seeding on startup
+seedRooms();
+
 app.use(express.json());
 
 const allowedConditions = ["good", "damaged"];
