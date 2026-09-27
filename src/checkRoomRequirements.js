@@ -13,7 +13,6 @@ export function checkRoomRequirements(room, standardRoomRequirements) {
 
     let actualQuantity = matchedAssets.length;
 
-    //console.log(requirement.type, damagedMatches);
     damagedAssets.push(...damagedMatches);
 
     if (actualQuantity < requirement.quantity) {
