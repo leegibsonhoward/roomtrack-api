@@ -1,7 +1,27 @@
 import express from "express";
+import { DatabaseSync } from "node:sqlite";
 
 const app = express();
 const port = 3000;
+
+const db = new DatabaseSync("roomtrack.db");
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS rooms (
+  id INTEGER PRIMARY KEY,
+  number INTEGER NOT NULL
+  )
+`);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS assets (
+    id INTEGER PRIMARY KEY,
+    room_id INTEGER NOT NULL,
+    type TEXT NOT NULL,
+    condition TEXT NOT NULL,
+    FOREIGN KEY (room_id) REFERENCES rooms(id)
+  )
+`);
 
 app.use(express.json());
 
@@ -47,13 +67,36 @@ let rooms = [
 //
 // Helpers
 //
+
+// SQLite migration helpers 
+function findRoomById(roomId) {
+  const statement = db.prepare(
+  "SELECT * FROM rooms WHERE id = ?"
+);
+
+  const room = statement.get(roomId);
+
+  if (room === undefined) {
+    return undefined;
+  }
+
+  const assets = findAssetsByRoomId(roomId);
+
+  room.assets = assets;
+
+  return room;
+}
+
+function findAssetsByRoomId(roomId) {
+  const statement = db.prepare(
+    "SELECT * FROM assets WHERE room_id = ?"
+  );
+
+  return statement.all(roomId);
+}
 // check if id is a valid number
 function isValidId(id) {
   return Number.isInteger(id) || id >= 0;
-}
-
-function findRoomById(roomId) {
-  return rooms.find(room => room.id === roomId);
 }
 
 function findAssetById(room, assetId) {
