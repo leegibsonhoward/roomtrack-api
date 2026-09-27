@@ -140,9 +140,16 @@ function createAsset(room, trimmedAssetType) {
 
 }
 
-function updateAssetCondition(asset, condition) {
-  asset.condition = condition;
-  return asset;
+function updateAssetCondition(room, asset, condition) {
+  const statement = db.prepare(`
+    UPDATE assets
+    SET condition = ?
+    WHERE id = ? AND room_id = ?
+  `);
+  
+  statement.run(condition, asset.id, room.id);
+  
+   return findAssetById(room, asset.id);
 }
 
 //
@@ -388,7 +395,7 @@ app.patch("/rooms/:roomId/assets/:assetId", (req, res) => {
     });
   }
 
-  const updatedAsset = updateAssetCondition(asset, trimmedCondition);
+  const updatedAsset = updateAssetCondition(room, asset, trimmedCondition);
 
   // respond with status code 200 (Updated) and return the new item
   res.status(200).json({
