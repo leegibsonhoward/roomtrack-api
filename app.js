@@ -108,15 +108,22 @@ function findAssetById(room, assetId) {
 }
 
 function deleteAsset(room, assetId) {
-  let index = room.assets.findIndex(asset => asset.id === assetId);
+  let deletedAsset = findAssetById(room, assetId);
 
-  if (index === -1) {
+  if (deletedAsset === undefined) {
     return undefined;
   }
 
-  let deletedAsset = room.assets.splice(index, 1);
+  const statement = db.prepare(`
+    DELETE FROM assets
+    WHERE id = ? AND room_id = ?
+  `);
 
-  return deletedAsset[0]; // returns object not an array
+  statement.run(assetId, room.id);
+
+  console.log(deleteAsset);
+
+  return deletedAsset;
 }
 
 function createAsset(room, trimmedAssetType) {
