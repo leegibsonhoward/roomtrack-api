@@ -1,11 +1,11 @@
 info:
-  name: Room Assets
+  name: Get Asset
   type: http
-  seq: 4
+  seq: 2
 
 http:
   method: GET
-  url: localhost:3000/rooms/1/assets
+  url: localhost:3000/rooms/1/assets/1
   auth: inherit
 
 settings:
@@ -13,4 +13,3 @@ settings:
   timeout: 0
   followRedirects: true
   maxRedirects: 5
-  forwardAuthorizationHeader: false

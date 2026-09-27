@@ -1,11 +1,11 @@
 info:
-  name: Remove Asset
+  name: Room
   type: http
-  seq: 8
+  seq: 2
 
 http:
-  method: DELETE
-  url: localhost:3000/rooms/1/assets/1
+  method: GET
+  url: localhost:3000/rooms/1
   auth: inherit
 
 settings:
