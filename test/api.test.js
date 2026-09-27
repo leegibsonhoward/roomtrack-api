@@ -1,16 +1,25 @@
-import test from "node:test";
+import test, { before, after } from "node:test";
 import assert from "node:assert/strict";
 
 process.env.DB_PATH = ":memory:";
 
 const { app } = await import("../app.js");
 
-test("GET /rooms returns seeded rooms", async () => {
-  const server = app.listen(0);
+let server;
+let port;
+
+before(() => {
+  server = app.listen(0);
 
   const address = server.address();
-  const port = address.port;
+  port = address.port;
+});
 
+after(() => {
+  server.close();
+});
+
+test("GET /rooms returns seeded rooms", async () => {
   const response = await fetch(
     `http://localhost:${port}/rooms`
   );
@@ -25,15 +34,9 @@ test("GET /rooms returns seeded rooms", async () => {
   assert.equal(body.data[1].number, 102);
   assert.equal(body.data[2].number, 103);
 
-  server.close();
 });
 
 test("asset CRUD lifecycle", async () => {
-  const server = app.listen(0);
-
-  const address = server.address();
-  const port = address.port;
-
   // CREATE
   const createResponse = await fetch(
     `http://localhost:${port}/rooms/1/assets`,
@@ -125,15 +128,9 @@ test("asset CRUD lifecycle", async () => {
   assert.equal(deletedResponse.status, 404);
   assert.equal(deletedBody.success, false);
 
-  server.close();
 });
 
 test("GET /rooms/abc returns 400 for invalid room ID", async () => {
-  const server = app.listen(0);
-
-  const address = server.address();
-  const port = address.port;
-
   const response = await fetch(
     `http://localhost:${port}/rooms/abc`
   );
@@ -144,15 +141,9 @@ test("GET /rooms/abc returns 400 for invalid room ID", async () => {
   assert.equal(body.success, false);
   assert.equal(body.message, "Invalid room ID");
 
-  server.close();
 });
 
 test("GET /rooms/999 returns 404 when room does not exist", async () => {
-  const server = app.listen(0);
-
-  const address = server.address();
-  const port = address.port;
-
   const response = await fetch(
     `http://localhost:${port}/rooms/999`
   );
@@ -163,16 +154,10 @@ test("GET /rooms/999 returns 404 when room does not exist", async () => {
   assert.equal(body.success, false);
   assert.equal(body.message, "Room not found");
 
-  server.close();
 });
 
 test("GET nonexistent asset returns 404", async () => {
-  const server = app.listen(0);
-
-  const address = server.address();
-  const port = address.port;
-
-  const response = await fetch(
+   const response = await fetch(
     `http://localhost:${port}/rooms/1/assets/999`
   );
 
@@ -182,15 +167,9 @@ test("GET nonexistent asset returns 404", async () => {
   assert.equal(body.success, false);
   assert.equal(body.message, "Asset not found");
 
-  server.close();
 });
 
 test("POST invalid asset type returns 400", async () => {
-  const server = app.listen(0);
-
-  const address = server.address();
-  const port = address.port;
-
   const response = await fetch(
     `http://localhost:${port}/rooms/1/assets`,
     {
@@ -210,15 +189,9 @@ test("POST invalid asset type returns 400", async () => {
   assert.equal(body.success, false);
   assert.equal(body.message, "Asset type not valid");
 
-  server.close();
 });
 
 test("PATCH invalid asset condition returns 400", async () => {
-  const server = app.listen(0);
-
-  const address = server.address();
-  const port = address.port;
-
   // Create an asset first
   const createResponse = await fetch(
     `http://localhost:${port}/rooms/1/assets`,
@@ -256,5 +229,4 @@ test("PATCH invalid asset condition returns 400", async () => {
   assert.equal(body.success, false);
   assert.equal(body.message, "Asset condition not valid");
 
-  server.close();
 });
