@@ -6,7 +6,9 @@ import { checkRoomRequirements } from './src/checkRoomRequirements.js';
 const app = express();
 const port = 3000;
 
-const db = new DatabaseSync("roomtrack.db");
+const databasePath = process.env.DB_PATH || "roomtrack.db";
+
+const db = new DatabaseSync(databasePath);
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS rooms (
