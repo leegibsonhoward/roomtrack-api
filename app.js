@@ -49,15 +49,15 @@ let rooms = [
 //
 // check if id is a valid number
 function isValidId(id) {
-  return (Number.isInteger(id) || id >= 0);
+  return Number.isInteger(id) || id >= 0;
 }
 
 function findRoomById(roomId) {
-  return rooms.find((room) => room.id === roomId);
+  return rooms.find(room => room.id === roomId);
 }
 
 function findAssetById(room, assetId) {
-  return room.assets.find((asset) => asset.id === assetId);
+  return room.assets.find(asset => asset.id === assetId);
 }
 
 function deleteAsset(room, assetId) {
@@ -66,22 +66,21 @@ function deleteAsset(room, assetId) {
   if (index === -1) {
     return undefined;
   }
-  
+
   let deletedAsset = room.assets.splice(index, 1);
 
   return deletedAsset[0]; // returns object not an array
-
 }
 
 function createAsset(room, trimmedAssetType) {
-    // flatten all assets across rooms
+  // flatten all assets across rooms
   const flatAssets = rooms.flatMap(room => room.assets);
   // extract asset ids
   const allIds = flatAssets.map(asset => asset.id);
 
   // find highest asset id
   let highestId;
-  if(allIds.length === 0) {
+  if (allIds.length === 0) {
     highestId = 0;
   } else {
     highestId = Math.max(...allIds);
@@ -91,22 +90,20 @@ function createAsset(room, trimmedAssetType) {
   const newAsset = {
     id: highestId + 1, // incremental Id
     type: trimmedAssetType,
-    condition: "good"
+    condition: "good",
   };
 
   // save the new asset into in-memory storage
   room.assets.push(newAsset);
-  
+
   console.log(room.assets);
 
   return newAsset;
-
 }
 
 function updateAssetCondition(asset, condition) {
-    asset.condition = condition;
-    return asset;
-
+  asset.condition = condition;
+  return asset;
 }
 
 //
@@ -148,28 +145,29 @@ app.post("/rooms/:roomId/assets", (req, res) => {
   }
 
   console.log(room);
-  
+
   const assetType = req.body.type;
 
   // validate user input is a string and not empty
-  if ( typeof assetType !== "string" ||
-    assetType.trim().length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Asset type is required"
-      });
+  if (typeof assetType !== "string" || assetType.trim().length === 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Asset type is required",
+    });
   }
 
   const trimmedAssetType = assetType.trim();
 
   // validate type is allowed
-  const foundRequirement = standardRoomRequirements.find(requirement => requirement.type === trimmedAssetType);
+  const foundRequirement = standardRoomRequirements.find(
+    requirement => requirement.type === trimmedAssetType,
+  );
 
   if (foundRequirement === undefined) {
     return res.status(400).json({
-        success: false,
-        message: "Asset type not valid"
-      });
+      success: false,
+      message: "Asset type not valid",
+    });
   }
 
   const newAsset = createAsset(room, trimmedAssetType);
@@ -186,12 +184,14 @@ function checkRoomRequirements(room, standardRoomRequirements) {
   // business logic / requirements initial check
   let damagedAssets = [];
   let missingAssets = [];
-  standardRoomRequirements.forEach((requirement) => {
+  standardRoomRequirements.forEach(requirement => {
     let matchedAssets = room.assets.filter(
-      asset => asset.type === requirement.type);
+      asset => asset.type === requirement.type,
+    );
 
     let damagedMatches = matchedAssets.filter(
-      asset => asset.condition === "damaged");
+      asset => asset.condition === "damaged",
+    );
 
     let actualQuantity = matchedAssets.length;
 
@@ -240,17 +240,17 @@ app.get("/rooms/:roomId", (req, res) => {
   }
 
   const roomStatus = checkRoomRequirements(room, standardRoomRequirements);
-   // respond with found room assets
+  // respond with found room assets
   return res.status(200).json({
     message: "Room retrieved successfully",
-    data: { 
+    data: {
       id: room.id,
       number: room.number,
       assets: room.assets,
       isComplete: roomStatus.isComplete,
       damagedAssets: roomStatus.damagedAssets,
-      missingAssets: roomStatus.missingAssets
-    }
+      missingAssets: roomStatus.missingAssets,
+    },
   });
 });
 
@@ -277,10 +277,7 @@ app.get("/rooms/:roomId/assets", (req, res) => {
     });
   }
 
-  const inventoryStatus = checkRoomRequirements(
-    room,
-    standardRoomRequirements,
-  );
+  const inventoryStatus = checkRoomRequirements(room, standardRoomRequirements);
   console.log(inventoryStatus);
 
   // respond with found room assets
@@ -301,7 +298,7 @@ app.patch("/rooms/:roomId/assets/:assetId", (req, res) => {
       message: "Invalid room ID",
     });
   }
-// check assetId is a positive number
+  // check assetId is a positive number
   if (!isValidId(assetId)) {
     return res.status(400).json({
       success: false,
@@ -333,12 +330,11 @@ app.patch("/rooms/:roomId/assets/:assetId", (req, res) => {
   let condition = req.body.condition;
 
   // validate user input is a string and not empty
-  if ( typeof condition !== "string" ||
-    condition.trim().length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Asset condition is required"
-      });
+  if (typeof condition !== "string" || condition.trim().length === 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Asset condition is required",
+    });
   }
 
   const trimmedCondition = condition.trim();
@@ -346,13 +342,13 @@ app.patch("/rooms/:roomId/assets/:assetId", (req, res) => {
   // validate type is allowed
   const isValidCondition = allowedConditions.includes(trimmedCondition);
 
-if (!isValidCondition) {
-  return res.status(400).json({
-    success: false,
-    message: "Asset condition not valid"
-  });
-}
-  
+  if (!isValidCondition) {
+    return res.status(400).json({
+      success: false,
+      message: "Asset condition not valid",
+    });
+  }
+
   const updatedAsset = updateAssetCondition(asset, trimmedCondition);
 
   // respond with status code 200 (Updated) and return the new item
@@ -361,7 +357,6 @@ if (!isValidCondition) {
     message: "Asset updated successfully",
     data: updatedAsset,
   });
-
 });
 
 app.get("/rooms/:roomId/assets/:assetId", (req, res) => {
@@ -411,7 +406,6 @@ app.get("/rooms/:roomId/assets/:assetId", (req, res) => {
     message: "Asset retrieved successfully",
     data: asset,
   });
-
 });
 
 app.delete("/rooms/:roomId/assets/:assetId", (req, res) => {
@@ -425,7 +419,7 @@ app.delete("/rooms/:roomId/assets/:assetId", (req, res) => {
       message: "Invalid room ID",
     });
   }
-  
+
   // check assetId is a positive number
   if (!isValidId(assetId)) {
     return res.status(400).json({
@@ -454,14 +448,13 @@ app.delete("/rooms/:roomId/assets/:assetId", (req, res) => {
       message: "Asset not found",
     });
   }
-  
+
   // respond with status code 200 and return the deleted asset
   res.status(200).json({
     success: true,
     message: "Asset deleted successfully",
     data: deletedAsset,
   });
-
 });
 
 app.listen(port, () => {
