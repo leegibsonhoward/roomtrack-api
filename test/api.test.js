@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 process.env.DB_PATH = ":memory:";
 
-const { app } = await import("../app.js");
+const { app } = await import("../src/app.js");
 
 let server;
 let port;

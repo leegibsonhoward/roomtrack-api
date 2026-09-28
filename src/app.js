@@ -1,7 +1,7 @@
 import express from "express";
 import { DatabaseSync } from "node:sqlite";
 
-import { checkRoomRequirements } from "./src/checkRoomRequirements.js";
+import { checkRoomRequirements } from "./checkRoomRequirements.js";
 
 // Express setup
 export const app = express();
