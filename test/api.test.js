@@ -230,3 +230,27 @@ test("PATCH invalid asset condition returns 400", async () => {
   assert.equal(body.message, "Asset condition not valid");
 
 });
+
+test("GET / returns API home", async () => {
+  const response = await fetch(
+    `http://localhost:${port}/`
+  );
+
+  const body = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(body.name, "RoomTrack API");
+  assert.equal(body.message, "Welcome to RoomTrack API");
+});
+
+test("GET /status returns API status", async () => {
+  const response = await fetch(
+    `http://localhost:${port}/status`
+  );
+
+  const body = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(body.success, true);
+  assert.equal(body.status, "ok");
+});
