@@ -162,9 +162,16 @@ function deleteAsset(room, assetId) {
 //
 app.get("/", (req, res) => {
   return res.json({
-    status: "Ok",
-    message: "Welcome to RoomTrack API",
+    name: "RoomTrack API",
     version: "v1.0.0",
+    message: "Welcome to RoomTrack API",
+  });
+});
+
+app.get("/status", (req, res) => {
+  return res.status(200).json({
+    success: true,
+    status: "ok",
   });
 });
 
