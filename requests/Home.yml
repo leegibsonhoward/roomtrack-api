@@ -1,11 +1,11 @@
 info:
-  name: Status
+  name: Home
   type: http
-  seq: 3
+  seq: 2
 
 http:
   method: GET
-  url: localhost:3000/status
+  url: localhost:3000/
   auth: inherit
 
 settings:
