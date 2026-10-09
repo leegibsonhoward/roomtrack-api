@@ -28,7 +28,7 @@ test("GET /rooms returns seeded rooms", async () => {
 
   assert.equal(response.status, 200);
   assert.equal(body.success, true);
-  assert.equal(body.data.length, 3);
+  assert.equal(body.data.length, 74); // hardcode amount of rooms
 
   assert.equal(body.data[0].number, 101);
   assert.equal(body.data[1].number, 102);

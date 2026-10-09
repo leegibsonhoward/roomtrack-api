@@ -11,10 +11,13 @@ app.use(express.json());
 const databasePath = process.env.DB_PATH || "roomtrack.db";
 const db = new DatabaseSync(databasePath);
 
+// production db room
+import { provisionRooms } from "./provisionRooms.js";
+
 db.exec(`
   CREATE TABLE IF NOT EXISTS rooms (
   id INTEGER PRIMARY KEY,
-  number INTEGER NOT NULL
+  number INTEGER NOT NULL UNIQUE
   )
 `);
 
@@ -27,6 +30,8 @@ db.exec(`
     FOREIGN KEY (room_id) REFERENCES rooms(id)
   )
 `);
+
+provisionRooms(db);
 
 // Seed data / initialization
 const initialRooms = [
