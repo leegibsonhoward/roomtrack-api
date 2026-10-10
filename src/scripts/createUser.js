@@ -1,18 +1,32 @@
 import readline from "node:readline/promises";
 import { stdin, stdout } from "node:process";
 
+import { readPassword } from "./readPassword.js";
+
 const rl = readline.createInterface({
   input: stdin,
   output: stdout,
 });
 
+async function createUser() {
 try {
   const username = (await rl.question("Username: ")).trim();
-  const password = await rl.question("Password: ");
   
+  rl.close();
+
+  const password = await readPassword();
+
   const role = (
-    await rl.question("Role (admin/staff): ")
-  ).trim().toLowerCase();
+    await readline
+      .createInterface({
+        input: stdin,
+        output: stdout,
+      })
+      .question("Role (admin/staff): ")
+  )
+    .trim()
+    .toLowerCase();
+  //rl.close();
 
   if (!username) {
     throw new Error("Username is required");
@@ -36,5 +50,8 @@ try {
 } catch (error) {
   console.error(`\nError: ${error.message}`);
 } finally {
-  rl.close();
+  process.exit(0); // Temporary workaround on hang
+  }
 }
+
+createUser();
