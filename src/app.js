@@ -9,7 +9,9 @@ app.use(express.json());
 
 // database setup
 const databasePath = process.env.DB_PATH || "roomtrack.db";
-const db = new DatabaseSync(databasePath);
+
+// export db for tests
+export const db = new DatabaseSync(databasePath);
 
 // production db room
 import { provisionRooms } from "./provisionRooms.js";
@@ -493,5 +495,43 @@ app.delete("/rooms/:roomId/assets/:assetId", (req, res) => {
     success: true,
     message: "Asset deleted successfully",
     data: deletedAsset,
+  });
+});
+
+import { authenticateUser } from "./auth/authenticateUser.js";
+
+app.post("/auth/login", async (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username) {
+    return res.status(400).json({
+      success: false,
+      message: "Username is required",
+    });
+  }
+
+  if (!password) {
+    return res.status(400).json({
+      success: false,
+      message: "Password is required",
+    });
+  }
+
+  const result = await authenticateUser(
+    db,
+    username,
+    password
+  );
+
+  if (!result.success) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid credentials",
+    });
+  }
+
+  return res.status(200).json({
+    success: true,
+    data: result.user,
   });
 });
