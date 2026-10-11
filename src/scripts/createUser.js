@@ -1,4 +1,6 @@
 import bcrypt from 'bcrypt';
+import { DatabaseSync } from "node:sqlite";
+const db = new DatabaseSync("roomtrack.db");
 
 import readline from "node:readline/promises";
 import { stdin, stdout } from "node:process";
@@ -28,7 +30,6 @@ try {
   )
     .trim()
     .toLowerCase();
-  //rl.close();
 
   if (!username) {
     throw new Error("Username is required");
@@ -47,16 +48,46 @@ try {
       12
   );
   
-  console.log("\nUser details:");
+  const statement = db.prepare(`
+  INSERT INTO users (
+    username,
+    password_hash,
+    role
+  )
+  VALUES (?, ?, ?)
+`);
+
+try {
+  statement.run(
+    username,
+    passwordHash,
+    role
+  );
+
+  console.log("\nUser created successfully");
 
   console.log({
     username,
     role,
   });
+} catch (error) {
+  if (
+    error.message.includes(
+      "UNIQUE constraint failed: users.username"
+    )
+  ) {
+    console.error(
+      "\nError: Username already exists"
+    );
+  } else {
+    throw error;
+  }
+}
 
 } catch (error) {
   console.error(`\nError: ${error.message}`);
 } finally {
+    db.close();
     process.exit(0); // Temporary workaround on hang
   }
 }
