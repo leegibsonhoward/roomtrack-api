@@ -1,3 +1,5 @@
+import bcrypt from 'bcrypt';
+
 import readline from "node:readline/promises";
 import { stdin, stdout } from "node:process";
 
@@ -40,6 +42,11 @@ try {
     throw new Error("Role must be admin or staff");
   }
 
+  const passwordHash = await bcrypt.hash(
+      password,
+      12
+  );
+  
   console.log("\nUser details:");
 
   console.log({
@@ -50,7 +57,7 @@ try {
 } catch (error) {
   console.error(`\nError: ${error.message}`);
 } finally {
-  process.exit(0); // Temporary workaround on hang
+    process.exit(0); // Temporary workaround on hang
   }
 }
 
