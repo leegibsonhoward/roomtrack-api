@@ -1,4 +1,6 @@
 import express from "express";
+import session from 'express-session';
+
 import { DatabaseSync } from "node:sqlite";
 
 import { checkRoomRequirements } from "./checkRoomRequirements.js";
@@ -7,6 +9,17 @@ import { checkRoomRequirements } from "./checkRoomRequirements.js";
 export const app = express();
 app.use(express.json());
 
+// session setup
+app.use(
+  session({
+    secret: "roomtrack-dev-secret",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+    },
+  })
+);
 // database setup
 const databasePath = process.env.DB_PATH || "roomtrack.db";
 
@@ -529,9 +542,24 @@ app.post("/auth/login", async (req, res) => {
       message: "Invalid credentials",
     });
   }
-
+  req.session.user = result.user;
+  console.log(req.session);
   return res.status(200).json({
     success: true,
     data: result.user,
+  });
+});
+
+app.get("/auth/me", (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({
+      success: false,
+      message: "Authentication required",
+    });
+  }
+
+  return res.status(200).json({
+    success: true,
+    data: req.session.user,
   });
 });

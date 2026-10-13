@@ -212,3 +212,66 @@ test("POST /auth/login requires password", async () => {
     "Password is required"
   );
 });
+
+test("GET /auth/me requires authentication", async () => {
+  const response = await fetch(
+    `http://localhost:${port}/auth/me`
+  );
+
+  const body = await response.json();
+
+  assert.equal(response.status, 401);
+  assert.equal(body.success, false);
+  assert.equal(
+    body.message,
+    "Authentication required"
+  );
+});
+
+test("GET /auth/me returns current user", async () => {
+  await createUser(
+    "me-user",
+    "password123",
+  );
+
+  const loginResponse = await fetch(
+    `http://localhost:${port}/auth/login`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: "me-user",
+        password: "password123",
+      }),
+    }
+  );
+
+  const cookie =
+    loginResponse.headers.get("set-cookie");
+
+  const response = await fetch(
+    `http://localhost:${port}/auth/me`,
+    {
+      headers: {
+        Cookie: cookie,
+      },
+    }
+  );
+
+  const body = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(body.success, true);
+
+  assert.equal(
+    body.data.username,
+    "me-user"
+  );
+
+  assert.equal(
+    body.data.role,
+    "admin"
+  );
+});
