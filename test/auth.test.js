@@ -275,3 +275,106 @@ test("GET /auth/me returns current user", async () => {
     "admin"
   );
 });
+
+test("POST /auth/logout destroys session", async () => {
+  await createUser(
+    "logout-user",
+    "password123",
+  );
+
+  const loginResponse = await fetch(
+    `http://localhost:${port}/auth/login`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: "logout-user",
+        password: "password123",
+      }),
+    }
+  );
+
+  const cookie = loginResponse.headers.get("set-cookie");
+
+  const logoutResponse = await fetch(
+    `http://localhost:${port}/auth/logout`,
+    {
+      method: "POST",
+      headers: {
+        Cookie: cookie,
+      },
+    }
+  );
+
+  const logoutBody = await logoutResponse.json();
+
+  assert.equal(logoutResponse.status, 200);
+  assert.equal(logoutBody.success, true);
+});
+
+test("POST /auth/logout removes authentication", async () => {
+  await createUser(
+    "logged-out-user",
+    "password123",
+  );
+
+  const loginResponse = await fetch(
+    `http://localhost:${port}/auth/login`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: "logged-out-user",
+        password: "password123",
+      }),
+    }
+  );
+
+  const cookie = loginResponse.headers.get("set-cookie");
+
+  await fetch(
+    `http://localhost:${port}/auth/logout`,
+    {
+      method: "POST",
+      headers: {
+        Cookie: cookie,
+      },
+    }
+  );
+
+  const meResponse = await fetch(
+    `http://localhost:${port}/auth/me`,
+    {
+      headers: {
+        Cookie: cookie,
+      },
+    }
+  );
+
+  const meBody = await meResponse.json();
+
+  assert.equal(meResponse.status, 401);
+  assert.equal(meBody.success, false);
+  assert.equal(
+    meBody.message,
+    "Authentication required"
+  );
+});
+
+test("POST /auth/logout succeeds when already logged out", async () => {
+  const response = await fetch(
+    `http://localhost:${port}/auth/logout`,
+    {
+      method: "POST",
+    }
+  );
+
+  const body = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(body.success, true);
+});

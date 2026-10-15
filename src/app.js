@@ -563,3 +563,19 @@ app.get("/auth/me", (req, res) => {
     data: req.session.user,
   });
 });
+
+app.post("/auth/logout", (req, res) => {
+  req.session.destroy((error) => {
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to logout",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  });
+});
