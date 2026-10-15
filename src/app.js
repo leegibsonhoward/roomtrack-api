@@ -512,6 +512,7 @@ app.delete("/rooms/:roomId/assets/:assetId", (req, res) => {
 });
 
 import { authenticateUser } from "./auth/authenticateUser.js";
+import { authenticate } from "./auth/authenticate.js";
 
 app.post("/auth/login", async (req, res) => {
   const { username, password } = req.body;
@@ -550,14 +551,7 @@ app.post("/auth/login", async (req, res) => {
   });
 });
 
-app.get("/auth/me", (req, res) => {
-  if (!req.session.user) {
-    return res.status(401).json({
-      success: false,
-      message: "Authentication required",
-    });
-  }
-
+app.get("/auth/me", authenticate, (req, res) => {
   return res.status(200).json({
     success: true,
     data: req.session.user,
