@@ -1,9 +1,10 @@
 import test, { before, after } from "node:test";
 import assert from "node:assert/strict";
+import bcrypt from 'bcrypt';
 
 process.env.DB_PATH = ":memory:";
 
-const { app } = await import("../src/app.js");
+const { app, db } = await import("../src/app.js");
 
 let server;
 let port;
@@ -16,14 +17,70 @@ before(() => {
 });
 
 after(() => {
+  const dropTable = db.prepare('DROP TABLE IF EXISTS users');
+  dropTable.run();
   server.close();
 });
 
-test("GET /rooms returns seeded rooms", async () => {
-  const response = await fetch(
-    `http://localhost:${port}/rooms`
+async function createUser(
+  username,
+  password,
+  role = "admin",
+  active = 1
+) {
+  const passwordHash = await bcrypt.hash(
+    password,
+    12
   );
 
+  db.prepare(`
+    INSERT INTO users (
+      username,
+      password_hash,
+      role,
+      active
+    )
+    VALUES (?, ?, ?, ?)
+  `).run(
+    username,
+    passwordHash,
+    role,
+    active
+  );
+}
+
+test("GET /rooms returns seeded rooms", async () => {
+  await createUser(
+    "lee",
+    "password123",
+  );
+
+  const loginResponse = await fetch(
+    `http://localhost:${port}/auth/login`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: "lee",
+        password: "password123",
+      }),
+    }
+  );
+
+  const cookie =
+    loginResponse.headers.get("set-cookie");
+
+  const response = await fetch(
+    `http://localhost:${port}/rooms`,
+    {
+      headers: {
+        Cookie: cookie,
+      },
+    }
+  );
+  
   const body = await response.json();
 
   assert.equal(response.status, 200);

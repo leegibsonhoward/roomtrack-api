@@ -378,3 +378,57 @@ test("POST /auth/logout succeeds when already logged out", async () => {
   assert.equal(response.status, 200);
   assert.equal(body.success, true);
 });
+
+test("GET /rooms requires authentication", async () => {
+  const response = await fetch(
+    `http://localhost:${port}/rooms`
+  );
+
+  const body = await response.json();
+
+  assert.equal(response.status, 401);
+  assert.equal(body.success, false);
+  assert.equal(
+    body.message,
+    "Authentication required"
+  );
+});
+
+test("GET /rooms allows authenticated users", async () => {
+  await createUser(
+    "rooms-user",
+    "password123",
+  );
+
+  const loginResponse = await fetch(
+    `http://localhost:${port}/auth/login`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: "rooms-user",
+        password: "password123",
+      }),
+    }
+  );
+
+  const cookie =
+    loginResponse.headers.get("set-cookie");
+
+  const response = await fetch(
+    `http://localhost:${port}/rooms`,
+    {
+      headers: {
+        Cookie: cookie,
+      },
+    }
+  );
+
+  const body = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(body.success, true);
+  assert.ok(body.data.length > 0);
+});

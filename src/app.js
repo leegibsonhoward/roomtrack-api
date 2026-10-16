@@ -206,7 +206,7 @@ app.get("/status", (req, res) => {
 });
 
 // list all rooms
-app.get("/rooms", (req, res) => {
+app.get("/rooms", authenticate, (req, res) => {
   const rooms = findAllRooms();
 
   return res.status(200).json({
