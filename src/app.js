@@ -1,5 +1,6 @@
 import express from "express";
 import session from 'express-session';
+import helmet from "helmet";
 
 import { DatabaseSync } from "node:sqlite";
 
@@ -12,6 +13,8 @@ import { authorize } from './auth/authorize.js';
 // Express setup
 export const app = express();
 app.use(express.json());
+
+app.use(helmet());
 
 // session setup
 app.use(
