@@ -1,4 +1,4 @@
-import test, { before, after } from "node:test";
+import test, { before, after, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import bcrypt from 'bcrypt';
 
@@ -9,16 +9,24 @@ const { app, db } = await import("../src/app.js");
 let server;
 let port;
 
+beforeEach(()=>{
+  db.exec(`
+    DELETE FROM users;
+  `);
+});
+
 before(() => {
   server = app.listen(0);
 
   const address = server.address();
   port = address.port;
+  //const createTable = db.prepare('CREATE TABLE IF NOT EXISTS users');
+  //createTable.run();
 });
 
 after(() => {
-  const dropTable = db.prepare('DROP TABLE IF EXISTS users');
-  dropTable.run();
+  //const dropTable = db.prepare('DROP TABLE IF EXISTS users');
+ // dropTable.run();
   server.close();
 });
 
@@ -51,7 +59,7 @@ async function createUser(
 
 test("GET /rooms returns seeded rooms", async () => {
   await createUser(
-    "lee",
+    "user-rooms",
     "password123",
   );
 
@@ -63,7 +71,7 @@ test("GET /rooms returns seeded rooms", async () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        username: "lee",
+        username: "user-rooms",
         password: "password123",
       }),
     }
@@ -94,6 +102,29 @@ test("GET /rooms returns seeded rooms", async () => {
 });
 
 test("asset CRUD lifecycle", async () => {
+
+  await createUser(
+    "rooms-user",
+    "password123",
+  );
+
+  const loginResponse = await fetch(
+    `http://localhost:${port}/auth/login`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: "rooms-user",
+        password: "password123",
+      }),
+    }
+  );
+
+  const cookie =
+    loginResponse.headers.get("set-cookie");
+
   // CREATE
   const createResponse = await fetch(
     `http://localhost:${port}/rooms/1/assets`,
@@ -101,6 +132,7 @@ test("asset CRUD lifecycle", async () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Cookie: cookie
       },
       body: JSON.stringify({
         type: "chair",
@@ -121,7 +153,12 @@ test("asset CRUD lifecycle", async () => {
 
   // READ
   const getResponse = await fetch(
-    `http://localhost:${port}/rooms/1/assets/${assetId}`
+    `http://localhost:${port}/rooms/1/assets/${assetId}`,{
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookie
+      },
+    }
   );
 
   const getBody = await getResponse.json();
@@ -139,6 +176,7 @@ test("asset CRUD lifecycle", async () => {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
+        Cookie: cookie,
       },
       body: JSON.stringify({
         condition: "damaged",
@@ -154,7 +192,13 @@ test("asset CRUD lifecycle", async () => {
 
   // READ AGAIN to prove update persisted
   const updatedResponse = await fetch(
-    `http://localhost:${port}/rooms/1/assets/${assetId}`
+    `http://localhost:${port}/rooms/1/assets/${assetId}`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookie
+      },
+    }
   );
 
   const updatedBody = await updatedResponse.json();
@@ -167,6 +211,9 @@ test("asset CRUD lifecycle", async () => {
     `http://localhost:${port}/rooms/1/assets/${assetId}`,
     {
       method: "DELETE",
+      headers: {
+        Cookie: cookie
+      }
     }
   );
 
@@ -177,7 +224,13 @@ test("asset CRUD lifecycle", async () => {
 
   // READ AGAIN to prove deletion persisted
   const deletedResponse = await fetch(
-    `http://localhost:${port}/rooms/1/assets/${assetId}`
+    `http://localhost:${port}/rooms/1/assets/${assetId}`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookie
+      },
+    }
   );
 
   const deletedBody = await deletedResponse.json();
@@ -188,8 +241,35 @@ test("asset CRUD lifecycle", async () => {
 });
 
 test("GET /rooms/abc returns 400 for invalid room ID", async () => {
+  await createUser(
+    "rooms-user-2",
+    "password123",
+  );
+
+  const loginResponse = await fetch(
+    `http://localhost:${port}/auth/login`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: "rooms-user-2",
+        password: "password123",
+      }),
+    }
+  );
+
+  const cookie =
+    loginResponse.headers.get("set-cookie");
+
   const response = await fetch(
-    `http://localhost:${port}/rooms/abc`
+    `http://localhost:${port}/rooms/abc`,
+    {
+      headers: {
+        Cookie: cookie,
+      },
+    }
   );
 
   const body = await response.json();
@@ -201,8 +281,35 @@ test("GET /rooms/abc returns 400 for invalid room ID", async () => {
 });
 
 test("GET /rooms/999 returns 404 when room does not exist", async () => {
+  await createUser(
+    "rooms-user",
+    "password123",
+  );
+
+  const loginResponse = await fetch(
+    `http://localhost:${port}/auth/login`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: "rooms-user",
+        password: "password123",
+      }),
+    }
+  );
+
+  const cookie =
+    loginResponse.headers.get("set-cookie");
+
   const response = await fetch(
-    `http://localhost:${port}/rooms/999`
+    `http://localhost:${port}/rooms/999`,
+    {
+      headers: {
+        Cookie: cookie,
+      },
+    }
   );
 
   const body = await response.json();
@@ -214,8 +321,35 @@ test("GET /rooms/999 returns 404 when room does not exist", async () => {
 });
 
 test("GET nonexistent asset returns 404", async () => {
-   const response = await fetch(
-    `http://localhost:${port}/rooms/1/assets/999`
+  await createUser(
+    "assets-user",
+    "password123",
+  );
+
+  const loginResponse = await fetch(
+    `http://localhost:${port}/auth/login`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: "assets-user",
+        password: "password123",
+      }),
+    }
+  );
+
+  const cookie =
+    loginResponse.headers.get("set-cookie");
+
+  const response = await fetch(
+    `http://localhost:${port}/rooms/1/assets/999`,
+    {
+      headers: {
+        Cookie: cookie,
+      },
+    }
   );
 
   const body = await response.json();

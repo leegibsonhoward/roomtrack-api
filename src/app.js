@@ -25,7 +25,7 @@ const databasePath = process.env.DB_PATH || "roomtrack.db";
 
 // export db for tests
 export const db = new DatabaseSync(databasePath);
-
+console.log("DB PATH:", databasePath);
 // production db room
 import { provisionRooms } from "./provisionRooms.js";
 
@@ -272,7 +272,7 @@ app.post("/rooms/:roomId/assets", (req, res) => {
   });
 });
 
-app.get("/rooms/:roomId", (req, res) => {
+app.get("/rooms/:roomId", authenticate, (req, res) => {
   // covert params id string to number
   const roomId = Number(req.params.roomId);
 
@@ -298,6 +298,7 @@ app.get("/rooms/:roomId", (req, res) => {
   const roomStatus = checkRoomRequirements(room, standardRoomRequirements);
   // respond with found room assets
   return res.status(200).json({
+    success: true,
     message: "Room retrieved successfully",
     data: {
       id: room.id,
@@ -310,7 +311,7 @@ app.get("/rooms/:roomId", (req, res) => {
   });
 });
 
-app.get("/rooms/:roomId/assets", (req, res) => {
+app.get("/rooms/:roomId/assets", authenticate, (req, res) => {
   // covert params id string to number
   const roomId = Number(req.params.roomId);
 
@@ -413,7 +414,7 @@ app.patch("/rooms/:roomId/assets/:assetId", (req, res) => {
   });
 });
 
-app.get("/rooms/:roomId/assets/:assetId", (req, res) => {
+app.get("/rooms/:roomId/assets/:assetId", authenticate, (req, res) => {
   const roomId = Number(req.params.roomId);
   const assetId = Number(req.params.assetId);
 
@@ -544,7 +545,7 @@ app.post("/auth/login", async (req, res) => {
     });
   }
   req.session.user = result.user;
-  console.log(req.session);
+  //console.log(req.session);
   return res.status(200).json({
     success: true,
     data: result.user,

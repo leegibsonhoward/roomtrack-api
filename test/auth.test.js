@@ -1,11 +1,19 @@
-import test, { before, after } from "node:test";
+import test, { before, after, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import bcrypt from "bcrypt";
+
+process.env.DB_PATH = ":memory:";
 
 const { app , db } = await import("../src/app.js");
 
 let server;
 let port;
+
+beforeEach(()=>{
+  db.exec(`
+    DELETE FROM users;
+  `);
+});
 
 before(() => {
   server = app.listen(0);
@@ -15,10 +23,11 @@ before(() => {
 });
 
 after(() => {
-  const dropTable = db.prepare('DROP TABLE IF EXISTS users');
-  dropTable.run();
+  //const dropTable = db.prepare('DROP TABLE IF EXISTS users');
+ //dropTable.run();
   server.close();
 });
+
 
 async function createUser(
   username,
@@ -432,3 +441,191 @@ test("GET /rooms allows authenticated users", async () => {
   assert.equal(body.success, true);
   assert.ok(body.data.length > 0);
 });
+
+test("GET /rooms/:roomId requires authentication", async () => {
+  const response = await fetch(
+    `http://localhost:${port}/rooms/1`
+  );
+
+  const body = await response.json();
+
+  assert.equal(response.status, 401);
+  assert.equal(body.success, false);
+  assert.equal(
+    body.message,
+    "Authentication required"
+  );
+});
+
+test("GET /rooms/:roomId allows authenticated users", async () => {
+  await createUser(
+    "room-detail-user",
+    "password123",
+  );
+
+  const loginResponse = await fetch(
+    `http://localhost:${port}/auth/login`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: "room-detail-user",
+        password: "password123",
+      }),
+    }
+  );
+
+  const cookie =
+    loginResponse.headers.get("set-cookie");
+
+  const response = await fetch(
+    `http://localhost:${port}/rooms/1`,
+    {
+      headers: {
+        Cookie: cookie,
+      },
+    }
+  );
+
+  const body = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(body.success, true);
+});
+
+test("GET /rooms/:roomId/assets requires authentication", async () => {
+  const response = await fetch(
+    `http://localhost:${port}/rooms/1/assets`
+  );
+
+  const body = await response.json();
+
+  assert.equal(response.status, 401);
+  assert.equal(body.success, false);
+  assert.equal(
+    body.message,
+    "Authentication required"
+  );
+});
+
+test("GET /rooms/:roomId/assets allows authenticated users", async () => {
+  await createUser(
+    "assets-user",
+    "password123",
+  );
+
+  const loginResponse = await fetch(
+    `http://localhost:${port}/auth/login`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: "assets-user",
+        password: "password123",
+      }),
+    }
+  );
+
+  const cookie =
+    loginResponse.headers.get("set-cookie");
+
+  const response = await fetch(
+    `http://localhost:${port}/rooms/1/assets`,
+    {
+      headers: {
+        Cookie: cookie,
+      },
+    }
+  );
+
+  const body = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(body.success, true);
+});
+
+test(
+  "GET /rooms/:roomId/assets/:assetId requires authentication",
+  async () => {
+    const response = await fetch(
+      `http://localhost:${port}/rooms/1/assets/1`
+    );
+
+    const body = await response.json();
+
+    assert.equal(response.status, 401);
+    assert.equal(body.success, false);
+    assert.equal(
+      body.message,
+      "Authentication required"
+    );
+  }
+);
+
+test(
+  "GET /rooms/:roomId/assets/:assetId allows authenticated users",
+  async () => {
+    await createUser(
+      "asset-detail-user",
+      "password123",
+    );
+
+    const loginResponse = await fetch(
+      `http://localhost:${port}/auth/login`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: "asset-detail-user",
+          password: "password123",
+        }),
+      }
+    );
+
+    const cookie =
+      loginResponse.headers.get("set-cookie");
+
+    const createResponse = await fetch(
+      `http://localhost:${port}/rooms/1/assets`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: cookie,
+        },
+        body: JSON.stringify({
+          type: "chair",
+        }),
+      }
+    );
+
+    const createBody =
+      await createResponse.json();
+
+    const assetId = createBody.data.id;
+
+    const response = await fetch(
+      `http://localhost:${port}/rooms/1/assets/${assetId}`,
+      {
+        headers: {
+          Cookie: cookie,
+        },
+      }
+    );
+
+    const body = await response.json();
+
+    assert.equal(response.status, 200);
+    assert.equal(body.success, true);
+    assert.equal(
+      body.data.id,
+      assetId
+    );
+  }
+);
