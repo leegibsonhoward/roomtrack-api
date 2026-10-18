@@ -5,6 +5,10 @@ import { DatabaseSync } from "node:sqlite";
 
 import { checkRoomRequirements } from "./checkRoomRequirements.js";
 
+import { authenticateUser } from "./auth/authenticateUser.js";
+import { authenticate } from "./auth/authenticate.js";
+import { authorize } from './auth/authorize.js';
+
 // Express setup
 export const app = express();
 app.use(express.json());
@@ -463,7 +467,7 @@ app.get("/rooms/:roomId/assets/:assetId", authenticate, (req, res) => {
   });
 });
 
-app.delete("/rooms/:roomId/assets/:assetId", authenticate, (req, res) => {
+app.delete("/rooms/:roomId/assets/:assetId", authenticate, authorize("admin"), (req, res) => {
   const roomId = Number(req.params.roomId);
   const assetId = Number(req.params.assetId);
 
@@ -511,9 +515,6 @@ app.delete("/rooms/:roomId/assets/:assetId", authenticate, (req, res) => {
     data: deletedAsset,
   });
 });
-
-import { authenticateUser } from "./auth/authenticateUser.js";
-import { authenticate } from "./auth/authenticate.js";
 
 app.post("/auth/login", async (req, res) => {
   const { username, password } = req.body;

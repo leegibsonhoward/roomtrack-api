@@ -737,3 +737,172 @@ test("DELETE /rooms/:roomId/assets/:assetId requires authentication", async () =
     "Authentication required"
   );
 });
+
+test("staff cannot delete assets", async () => {
+  await createUser(
+    "staff-user",
+    "password123",
+    "staff"
+  );
+
+  const loginResponse = await fetch(
+    `http://localhost:${port}/auth/login`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: "staff-user",
+        password: "password123",
+      }),
+    }
+  );
+
+  const cookie =
+    loginResponse.headers.get("set-cookie");
+
+  const createResponse = await fetch(
+    `http://localhost:${port}/rooms/1/assets`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookie,
+      },
+      body: JSON.stringify({
+        type: "chair",
+      }),
+    }
+  );
+
+  const createBody =
+    await createResponse.json();
+
+  const assetId = createBody.data.id;
+
+  const deleteResponse = await fetch(
+    `http://localhost:${port}/rooms/1/assets/${assetId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Cookie: cookie,
+      },
+    }
+  );
+
+  const deleteBody =
+    await deleteResponse.json();
+
+  assert.equal(deleteResponse.status, 403);
+  assert.equal(deleteBody.success, false);
+  assert.equal(
+    deleteBody.message,
+    "Forbidden"
+  );
+});
+
+test("admin can delete assets", async () => {
+  await createUser(
+    "admin-user",
+    "password123",
+    "admin"
+  );
+
+  const loginResponse = await fetch(
+    `http://localhost:${port}/auth/login`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: "admin-user",
+        password: "password123",
+      }),
+    }
+  );
+
+  const cookie =
+    loginResponse.headers.get("set-cookie");
+
+  const createResponse = await fetch(
+    `http://localhost:${port}/rooms/1/assets`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookie,
+      },
+      body: JSON.stringify({
+        type: "chair",
+      }),
+    }
+  );
+
+  const createBody =
+    await createResponse.json();
+
+  const assetId = createBody.data.id;
+
+  const deleteResponse = await fetch(
+    `http://localhost:${port}/rooms/1/assets/${assetId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Cookie: cookie,
+      },
+    }
+  );
+
+  const deleteBody =
+    await deleteResponse.json();
+
+  assert.equal(deleteResponse.status, 200);
+  assert.equal(deleteBody.success, true);
+});
+
+test("user without required role receives forbidden response", async () => {
+  await createUser(
+    "staff-role-user",
+    "password123",
+    "staff"
+  );
+
+  const loginResponse = await fetch(
+    `http://localhost:${port}/auth/login`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: "staff-role-user",
+        password: "password123",
+      }),
+    }
+  );
+
+  const cookie =
+    loginResponse.headers.get("set-cookie");
+
+  const response = await fetch(
+    `http://localhost:${port}/rooms/1/assets/1`,
+    {
+      method: "DELETE",
+      headers: {
+        Cookie: cookie,
+      },
+    }
+  );
+
+  const body = await response.json();
+
+  assert.equal(response.status, 403);
+  assert.equal(body.success, false);
+  assert.equal(
+    body.message,
+    "Forbidden"
+  );
+  
+});

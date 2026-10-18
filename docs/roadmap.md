@@ -11,7 +11,7 @@ Production room provisioning
 └── documentation  
 
 
-v0.5.0  
+v0.5.0 ✅  
 Authentication  
 ├── users table  
 ├── admin/staff roles  
