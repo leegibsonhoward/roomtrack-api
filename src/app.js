@@ -14,7 +14,11 @@ import "dotenv/config";
 
 // Express setup
 export const app = express();
-app.use(express.json());
+
+// limit payload size
+app.use(express.json({
+    limit: "100kb",
+  }));
 
 app.use(helmet());
 
