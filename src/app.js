@@ -10,16 +10,25 @@ import { authenticateUser } from "./auth/authenticateUser.js";
 import { authenticate } from "./auth/authenticate.js";
 import { authorize } from './auth/authorize.js';
 
+import "dotenv/config";
+
 // Express setup
 export const app = express();
 app.use(express.json());
 
 app.use(helmet());
 
+console.log(process.env.SESSION_SECRET);
+if (!process.env.SESSION_SECRET) {
+  throw new Error(
+    "SESSION_SECRET environment variable is required"
+  );
+}
+
 // session setup
 app.use(
   session({
-    secret: "roomtrack-dev-secret",
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {

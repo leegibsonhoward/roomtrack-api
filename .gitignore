@@ -2,3 +2,6 @@ node_modules/
 
 # dont commit any database related files 
 *.db
+
+# dont commit sensitive info such as secrets  
+.env
