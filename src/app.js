@@ -217,7 +217,7 @@ app.get("/rooms", authenticate, (req, res) => {
 });
 
 // create asset for room by ID
-app.post("/rooms/:roomId/assets", (req, res) => {
+app.post("/rooms/:roomId/assets", authenticate, (req, res) => {
   const roomId = Number(req.params.roomId);
 
   // check roomId is a positive number
@@ -342,7 +342,7 @@ app.get("/rooms/:roomId/assets", authenticate, (req, res) => {
   });
 });
 
-app.patch("/rooms/:roomId/assets/:assetId", (req, res) => {
+app.patch("/rooms/:roomId/assets/:assetId", authenticate, (req, res) => {
   const roomId = Number(req.params.roomId);
   const assetId = Number(req.params.assetId);
 
@@ -463,7 +463,7 @@ app.get("/rooms/:roomId/assets/:assetId", authenticate, (req, res) => {
   });
 });
 
-app.delete("/rooms/:roomId/assets/:assetId", (req, res) => {
+app.delete("/rooms/:roomId/assets/:assetId", authenticate, (req, res) => {
   const roomId = Number(req.params.roomId);
   const assetId = Number(req.params.assetId);
 

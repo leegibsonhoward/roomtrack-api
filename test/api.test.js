@@ -361,12 +361,34 @@ test("GET nonexistent asset returns 404", async () => {
 });
 
 test("POST invalid asset type returns 400", async () => {
+  await createUser(
+      "invalid-asset-user2",
+      "password123",
+    );
+
+    const loginResponse = await fetch(
+      `http://localhost:${port}/auth/login`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: "invalid-asset-user2",
+          password: "password123",
+        }),
+      }
+    );
+
+    const cookie =
+      loginResponse.headers.get("set-cookie");
   const response = await fetch(
     `http://localhost:${port}/rooms/1/assets`,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Cookie: cookie,
       },
       body: JSON.stringify({
         type: "banana",
@@ -383,6 +405,27 @@ test("POST invalid asset type returns 400", async () => {
 });
 
 test("PATCH invalid asset condition returns 400", async () => {
+  await createUser(
+      "invalid-asset-user",
+      "password123",
+    );
+
+    const loginResponse = await fetch(
+      `http://localhost:${port}/auth/login`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: "invalid-asset-user",
+          password: "password123",
+        }),
+      }
+    );
+
+    const cookie =
+      loginResponse.headers.get("set-cookie");
   // Create an asset first
   const createResponse = await fetch(
     `http://localhost:${port}/rooms/1/assets`,
@@ -390,6 +433,7 @@ test("PATCH invalid asset condition returns 400", async () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Cookie: cookie,
       },
       body: JSON.stringify({
         type: "chair",
@@ -407,6 +451,7 @@ test("PATCH invalid asset condition returns 400", async () => {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
+        Cookie: cookie,
       },
       body: JSON.stringify({
         condition: "broken",

@@ -629,3 +629,111 @@ test(
     );
   }
 );
+
+
+test("POST /rooms/:roomsId/assets requires authentication", async () => {
+
+
+  const createResponse = await fetch(
+    `http://localhost:${port}/rooms/1/assets`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        type: "chair",
+      }),
+    }
+  );
+  const body = await createResponse.json();
+
+  assert.equal(createResponse.status, 401);
+  assert.equal(body.success, false);
+  assert.equal(
+    body.message,
+    "Authentication required"
+  );
+});
+
+test("POST /rooms/:roomsId/assets allows authenticated user", async () => {
+  await createUser(
+    "create-assets-user2",
+    "password123",
+  );
+
+  const loginResponse = await fetch(
+    `http://localhost:${port}/auth/login`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username: "create-assets-user2",
+        password: "password123",
+      }),
+    }
+  );
+
+  const cookie =
+    loginResponse.headers.get("set-cookie");
+
+  const response = await fetch(
+    `http://localhost:${port}/rooms`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookie,
+      },
+    }
+  );
+
+  const body = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(body.success, true);
+  assert.ok(body.data.length > 0);
+});
+
+test("PATCH /rooms/:roomId/assets/:assetId requires authentication", async () => {
+  const response = await fetch(
+    `http://localhost:${port}/rooms/1/assets/1`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        condition: "damaged",
+      }),
+    }
+  );
+
+  const body = await response.json();
+
+  assert.equal(response.status, 401);
+  assert.equal(body.success, false);
+  assert.equal(
+    body.message,
+    "Authentication required"
+  );
+});
+
+test("DELETE /rooms/:roomId/assets/:assetId requires authentication", async () => {
+  const response = await fetch(
+    `http://localhost:${port}/rooms/1/assets/1`,
+    {
+      method: "DELETE",
+    }
+  );
+
+  const body = await response.json();
+
+  assert.equal(response.status, 401);
+  assert.equal(body.success, false);
+  assert.equal(
+    body.message,
+    "Authentication required"
+  );
+});
