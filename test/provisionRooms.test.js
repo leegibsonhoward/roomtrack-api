@@ -4,6 +4,8 @@ import { DatabaseSync } from "node:sqlite";
 
 import { provisionRooms } from "../src/provisionRooms.js";
 
+// TODO: extract and use initializeDatabase instead
+
 test("provisions 74 rooms", () => {
   const db = new DatabaseSync(":memory:");
 

@@ -45,36 +45,13 @@ const databasePath = process.env.DB_PATH || "roomtrack.db";
 
 // export db for tests
 export const db = new DatabaseSync(databasePath);
+
+import { initializeDatabase } from './db/initializaDatabase.js';
+initializeDatabase(db);
+
 console.log("DB PATH:", databasePath);
 // production db room
 import { provisionRooms } from "./provisionRooms.js";
-
-db.exec(`
-  CREATE TABLE IF NOT EXISTS rooms (
-  id INTEGER PRIMARY KEY,
-  number INTEGER NOT NULL UNIQUE
-  )
-`);
-
-db.exec(`
-  CREATE TABLE IF NOT EXISTS assets (
-    id INTEGER PRIMARY KEY,
-    room_id INTEGER NOT NULL,
-    type TEXT NOT NULL,
-    condition TEXT NOT NULL,
-    FOREIGN KEY (room_id) REFERENCES rooms(id)
-  )
-`);
-
-db.exec(`
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY,
-    username TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
-    role TEXT NOT NULL,
-    active INTEGER NOT NULL DEFAULT 1
-  )
-`);
 
 provisionRooms(db);
 

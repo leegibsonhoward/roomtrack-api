@@ -1,27 +1,19 @@
-import test from "node:test";
+import test, { beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import bcrypt from "bcrypt";
-import { DatabaseSync } from "node:sqlite";
 
 import { authenticateUser } from "../src/auth/authenticateUser.js";
 
-function createUsersTable(db) {
+process.env.DB_PATH = ":memory:";
+import { db } from '../src/app.js';
+
+beforeEach(()=>{
   db.exec(`
-    CREATE TABLE users (
-      id INTEGER PRIMARY KEY,
-      username TEXT NOT NULL UNIQUE,
-      password_hash TEXT NOT NULL,
-      role TEXT NOT NULL,
-      active INTEGER NOT NULL DEFAULT 1
-    )
+    DELETE FROM users;
   `);
-}
+});
 
 test("authenticates a valid user", async () => {
-  const db = new DatabaseSync(":memory:");
-
-  createUsersTable(db);
-
   const passwordHash = await bcrypt.hash("password123", 12);
 
   db.prepare(`
@@ -33,7 +25,7 @@ test("authenticates a valid user", async () => {
     )
     VALUES (?, ?, ?, ?)
   `).run(
-    "lee",
+    "valid-user",
     passwordHash,
     "admin",
     1
@@ -41,20 +33,16 @@ test("authenticates a valid user", async () => {
 
   const result = await authenticateUser(
     db,
-    "lee",
+    "valid-user",
     "password123"
   );
 
   assert.equal(result.success, true);
-  assert.equal(result.user.username, "lee");
+  assert.equal(result.user.username, "valid-user");
   assert.equal(result.user.role, "admin");
 });
 
 test("fails when username does not exist", async () => {
-  const db = new DatabaseSync(":memory:");
-
-  createUsersTable(db);
-
   const result = await authenticateUser(
     db,
     "missing-user",
@@ -65,10 +53,6 @@ test("fails when username does not exist", async () => {
 });
 
 test("fails when password is incorrect", async () => {
-  const db = new DatabaseSync(":memory:");
-
-  createUsersTable(db);
-
   const passwordHash = await bcrypt.hash("password123", 12);
 
   db.prepare(`
@@ -80,7 +64,7 @@ test("fails when password is incorrect", async () => {
     )
     VALUES (?, ?, ?, ?)
   `).run(
-    "lee",
+    "pw-incorrect-user",
     passwordHash,
     "admin",
     1
@@ -88,7 +72,7 @@ test("fails when password is incorrect", async () => {
 
   const result = await authenticateUser(
     db,
-    "lee",
+    "pw-incorrect-user",
     "wrong-password"
   );
 
@@ -96,10 +80,6 @@ test("fails when password is incorrect", async () => {
 });
 
 test("fails when user is inactive", async () => {
-  const db = new DatabaseSync(":memory:");
-
-  createUsersTable(db);
-
   const passwordHash = await bcrypt.hash("password123", 12);
 
   db.prepare(`
@@ -111,7 +91,7 @@ test("fails when user is inactive", async () => {
     )
     VALUES (?, ?, ?, ?)
   `).run(
-    "lee",
+    "inactive-user",
     passwordHash,
     "admin",
     0
@@ -119,7 +99,7 @@ test("fails when user is inactive", async () => {
 
   const result = await authenticateUser(
     db,
-    "lee",
+    "inactive-user",
     "password123"
   );
 

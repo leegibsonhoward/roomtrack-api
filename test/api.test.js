@@ -22,13 +22,9 @@ before(() => {
 
   const address = server.address();
   port = address.port;
-  //const createTable = db.prepare('CREATE TABLE IF NOT EXISTS users');
-  //createTable.run();
 });
 
 after(() => {
-  //const dropTable = db.prepare('DROP TABLE IF EXISTS users');
- // dropTable.run();
   server.close();
 });
 

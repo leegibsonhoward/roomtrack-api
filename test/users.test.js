@@ -2,6 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
 
+// TODO: extract and use initializeDatabase instead
+
 test("creates users table", () => {
   const db = new DatabaseSync(":memory:");
 

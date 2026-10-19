@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import { DatabaseSync } from "node:sqlite";
 const db = new DatabaseSync("roomtrack.db");
+import { initializeDatabase } from '../db/initializaDatabase.js';
 
 import readline from "node:readline/promises";
 import { stdin, stdout } from "node:process";
@@ -11,6 +12,8 @@ const rl = readline.createInterface({
   input: stdin,
   output: stdout,
 });
+
+initializeDatabase(db);
 
 async function createUser() {
 try {

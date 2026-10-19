@@ -25,8 +25,6 @@ before(() => {
 });
 
 after(() => {
-  //const dropTable = db.prepare('DROP TABLE IF EXISTS users');
- //dropTable.run();
   server.close();
 });
 
