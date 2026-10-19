@@ -1,3 +1,5 @@
+import { provisionRoomAssets } from './provisionRoomAssets.js';
+
 import {
   generateRooms,
   productionRoomRanges,
@@ -14,4 +16,7 @@ export function provisionRooms(db) {
   rooms.forEach((room) => {
     statement.run(room.number);
   });
+
+  provisionRoomAssets(db);
+  
 }
