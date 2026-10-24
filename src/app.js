@@ -76,11 +76,21 @@ provisionRooms(db);
 // Database Helpers
 //
 
+/**
+ * Validates route identifiers before they are used
+ * in database queries.
+ *
+ * Prevents invalid room and asset identifiers from
+ * reaching the data access layer.
+ */
 function isValidId(id) {
   return Number.isInteger(id) || id >= 0;
 }
 
-// CREATE
+/**
+ * Creates a new asset in the supplied room and
+ * returns the newly created database record.
+ */
 function createAsset(room, trimmedAssetType) {
   const statement = db.prepare(`
     INSERT INTO assets (room_id, type, condition)
@@ -89,6 +99,8 @@ function createAsset(room, trimmedAssetType) {
 
   const result = statement.run(room.id, trimmedAssetType, "good");
 
+  // Re-read the inserted asset so callers receive
+  // the stored database representation.
   const newAsset = findAssetById(room, result.lastInsertRowid);
 
   return newAsset;
@@ -100,6 +112,11 @@ function findAllRooms() {
   return statement.all();
 }
 
+/**
+ * Retrieves a room and eagerly loads its assets.
+ *
+ * Returns undefined when the room does not exist.
+ */
 function findRoomById(roomId) {
   const statement = db.prepare("SELECT * FROM rooms WHERE id = ?");
 
@@ -109,6 +126,8 @@ function findRoomById(roomId) {
     return undefined;
   }
 
+  // Attach room assets so route handlers receive
+  // a complete room representation.
   const assets = findAssetsByRoomId(roomId);
 
   room.assets = assets;
@@ -116,12 +135,21 @@ function findRoomById(roomId) {
   return room;
 }
 
+/**
+ * Retrieves every asset assigned to a room.
+ */
 function findAssetsByRoomId(roomId) {
   const statement = db.prepare("SELECT * FROM assets WHERE room_id = ?");
 
   return statement.all(roomId);
 }
 
+/**
+ * Retrieves a specific asset belonging to a room.
+ *
+ * Asset ownership is verified using both the room
+ * identifier and asset identifier.
+ */
 function findAssetById(room, assetId) {
   const statement = db.prepare(
     "SELECT * FROM assets WHERE id = ? AND room_id = ?",
@@ -130,7 +158,10 @@ function findAssetById(room, assetId) {
   return statement.get(assetId, room.id);
 }
 
-// UPDATE
+/**
+ * Updates an asset's condition and returns the
+ * latest database record.
+ */
 function updateAssetCondition(room, asset, condition) {
   const statement = db.prepare(`
     UPDATE assets
@@ -143,8 +174,17 @@ function updateAssetCondition(room, asset, condition) {
   return findAssetById(room, asset.id);
 }
 
-// DELETE
+/**
+ * Deletes an asset from a room and returns the
+ * deleted asset information.
+ *
+ * returning the deleted record allows route
+ * handlers to include it in API responses.
+ */
 function deleteAsset(room, assetId) {
+
+  // Capture the asset before deletion so it can
+  // be returned to the caller.
   let deletedAsset = findAssetById(room, assetId);
 
   if (deletedAsset === undefined) {
