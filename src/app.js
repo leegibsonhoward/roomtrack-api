@@ -23,7 +23,6 @@ app.use(express.json({
 
 app.use(helmet());
 
-console.log(process.env.SESSION_SECRET);
 if (!process.env.SESSION_SECRET) {
   throw new Error(
     "SESSION_SECRET environment variable is required"
