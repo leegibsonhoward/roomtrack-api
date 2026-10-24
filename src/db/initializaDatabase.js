@@ -1,3 +1,14 @@
+/**
+ * Creates the RoomTrack database schema.
+ *
+ * Safe to call multiple times during:
+ * - application startup
+ * - user provisioning
+ * - room provisioning
+ * - automated tests
+ *
+ * Existing tables are left unchanged.
+ */
 export function initializeDatabase(db) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS rooms (

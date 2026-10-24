@@ -1,3 +1,15 @@
+/**
+ * Defines the standard inventory expected in every
+ * provisioned room.
+ *
+ * Room provisioning uses these requirements to seed
+ * assets and room inspections use them to determine
+ * compliance.
+ *
+ * Each requirement specifies:
+ * - asset type
+ * - expected quantity
+ */
 export const standardRoomRequirements = [
   { type: "phone", quantity: 1 },
   { type: "tv", quantity: 1 },

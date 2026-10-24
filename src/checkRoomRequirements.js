@@ -1,3 +1,12 @@
+/**
+ * Evaluates a room against the standard inventory
+ * requirements defined for RoomTrack.
+ *
+ * Determines whether a room is complete and identifies
+ * assets that are missing or marked as damaged.
+ *
+ * Used by room inspection and compliance reporting.
+ */
 export function checkRoomRequirements(room, standardRoomRequirements) {
   // business logic / requirements initial check
   let damagedAssets = [];

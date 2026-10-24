@@ -1,3 +1,10 @@
+/**
+ * Utility for reading a password from the terminal
+ * without displaying typed characters.
+ *
+ * Used by user provisioning scripts to prevent
+ * passwords from being exposed on screen.
+ */
 import { stdin, stdout } from "node:process";
 
 export async function readPassword(prompt = "Password: ") {

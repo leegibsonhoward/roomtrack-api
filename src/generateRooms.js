@@ -1,3 +1,10 @@
+/**
+ * Defines the production room inventory.
+ *
+ * Each range represents a contiguous block of room
+ * numbers that should exist in the system after
+ * provisioning.
+ */
 export const productionRoomRanges = [
   {
     start: 101,
@@ -16,6 +23,13 @@ export const productionRoomRanges = [
   },
 ];
 
+/**
+ * Generates room records from a collection of room
+ * number ranges.
+ *
+ * Used during room provisioning to create the complete
+ * set of production rooms managed by RoomTrack.
+ */
 export function generateRooms(roomRanges) {
   const rooms = [];
 

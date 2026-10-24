@@ -1,5 +1,14 @@
 import { standardRoomRequirements } from "./standardRoomRequirements.js";
 
+/**
+ * Ensures each room contains the standard asset
+ * inventory defined by standardRoomRequirements.
+ *
+ * Missing assets are added automatically.
+ * Existing assets are not duplicated.
+ *
+ * Safe to run multiple times.
+ */
 export function provisionRoomAssets(db) {
   const rooms = db.prepare(`
     SELECT id

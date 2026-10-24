@@ -1,3 +1,14 @@
+/**
+ * Command-line utility for provisioning RoomTrack users.
+ *
+ * Creates administrator and staff accounts using
+ * bcrypt password hashing.
+ *
+ * The database schema is initialized automatically
+ * before user creation so the script can be run on
+ * a fresh installation.
+ */
+
 import bcrypt from 'bcrypt';
 import { DatabaseSync } from "node:sqlite";
 const db = new DatabaseSync("roomtrack.db");
@@ -15,6 +26,10 @@ const rl = readline.createInterface({
 
 initializeDatabase(db);
 
+/**
+ * Prompts for user details and stores a new user
+ * in the RoomTrack database.
+ */
 async function createUser() {
 try {
   const username = (await rl.question("Username: ")).trim();

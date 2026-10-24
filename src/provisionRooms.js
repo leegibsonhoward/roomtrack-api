@@ -5,6 +5,15 @@ import {
   productionRoomRanges,
 } from "./generateRooms.js";
 
+/**
+ * Provisions all production rooms defined by
+ * productionRoomRanges.
+ *
+ * Safe to run multiple times.
+ *
+ * Newly provisioned rooms automatically receive
+ * their standard asset inventory.
+ */
 export function provisionRooms(db) {
   const rooms = generateRooms(productionRoomRanges);
 
