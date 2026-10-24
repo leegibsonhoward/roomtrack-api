@@ -1,19 +1,36 @@
+//
+// Imports
+//
+
+// Environment
+import "dotenv/config";
+
+// Third-party packages
 import express from "express";
 import session from 'express-session';
 import helmet from "helmet";
 
+// Node.js
 import { DatabaseSync } from "node:sqlite";
 
-import { checkRoomRequirements } from "./checkRoomRequirements.js";
-
-import { authenticateUser } from "./auth/authenticateUser.js";
+// Authentication
 import { authenticate } from "./auth/authenticate.js";
+import { authenticateUser } from "./auth/authenticateUser.js";
 import { authorize } from './auth/authorize.js';
+
+// Database
+import { initializeDatabase } from './db/initializaDatabase.js';
+
+// Provisioning
+import { provisionRooms } from "./provisionRooms.js";
+
+// RoomTrack modules
+import { checkRoomRequirements } from "./checkRoomRequirements.js";
 import { standardRoomRequirements } from "./standardRoomRequirements.js";
 
-import "dotenv/config";
-
-// Express setup
+//
+// Configuration
+//
 export const app = express();
 
 // limit payload size
@@ -29,7 +46,7 @@ if (!process.env.SESSION_SECRET) {
   );
 }
 
-// session setup
+// express-session configuration
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -40,61 +57,49 @@ app.use(
     },
   })
 );
-// database setup
+
+//
+// Database Initialization
+//
 const databasePath = process.env.DB_PATH || "roomtrack.db";
 
-// export db for tests
 export const db = new DatabaseSync(databasePath);
+// TODO: should db be exported for tests.
+// tests import db from app.js and set databasePath to
+// process.env.DB_PATH = ":memory:"
 
-import { initializeDatabase } from './db/initializaDatabase.js';
 initializeDatabase(db);
-
-console.log("DB PATH:", databasePath);
-// production db room
-import { provisionRooms } from "./provisionRooms.js";
 
 provisionRooms(db);
 
-// Seed data / initialization
-const initialRooms = [
-  { id: 1, number: 101 },
-  { id: 2, number: 102 },
-  { id: 3, number: 103 },
-];
-
-// database helper
-function seedRooms() {
-  const statement = db.prepare(`
-    INSERT OR IGNORE INTO rooms (id, number)
-    VALUES (?, ?)
-  `);
-
-  initialRooms.forEach(room => {
-    statement.run(room.id, room.number);
-  });
-}
-
-// execute seeding on startup
-seedRooms();
-
-const allowedConditions = ["good", "damaged"];
-
 //
-// Helpers
+// Database Helpers
 //
 
-// check if id is a valid number
 function isValidId(id) {
   return Number.isInteger(id) || id >= 0;
 }
 
-// Get all rooms in database
+// CREATE
+function createAsset(room, trimmedAssetType) {
+  const statement = db.prepare(`
+    INSERT INTO assets (room_id, type, condition)
+    VALUES (?, ?, ?)  
+  `);
+
+  const result = statement.run(room.id, trimmedAssetType, "good");
+
+  const newAsset = findAssetById(room, result.lastInsertRowid);
+
+  return newAsset;
+}
+
+// READ 
 function findAllRooms() {
   const statement = db.prepare(`SELECT * FROM rooms`);
   return statement.all();
 }
 
-// SQLite migration helpers
 function findRoomById(roomId) {
   const statement = db.prepare("SELECT * FROM rooms WHERE id = ?");
 
@@ -123,20 +128,6 @@ function findAssetById(room, assetId) {
   );
 
   return statement.get(assetId, room.id);
-}
-
-// CREATE
-function createAsset(room, trimmedAssetType) {
-  const statement = db.prepare(`
-    INSERT INTO assets (room_id, type, condition)
-    VALUES (?, ?, ?)  
-  `);
-
-  const result = statement.run(room.id, trimmedAssetType, "good");
-
-  const newAsset = findAssetById(room, result.lastInsertRowid);
-
-  return newAsset;
 }
 
 // UPDATE
@@ -171,7 +162,7 @@ function deleteAsset(room, assetId) {
 }
 
 //
-// Routes //////////////////////////////////////////
+// Health Routes
 //
 app.get("/", (req, res) => {
   return res.json({
@@ -188,7 +179,71 @@ app.get("/status", (req, res) => {
   });
 });
 
-// list all rooms
+//
+// Authentication Routes
+//
+app.post("/auth/login", async (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username) {
+    return res.status(400).json({
+      success: false,
+      message: "Username is required",
+    });
+  }
+
+  if (!password) {
+    return res.status(400).json({
+      success: false,
+      message: "Password is required",
+    });
+  }
+
+  const result = await authenticateUser(
+    db,
+    username,
+    password
+  );
+
+  if (!result.success) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid credentials",
+    });
+  }
+  req.session.user = result.user;
+  return res.status(200).json({
+    success: true,
+    data: result.user,
+  });
+});
+
+app.get("/auth/me", authenticate, (req, res) => {
+  return res.status(200).json({
+    success: true,
+    data: req.session.user,
+  });
+});
+
+app.post("/auth/logout", (req, res) => {
+  req.session.destroy((error) => {
+    if (error) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to logout",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  });
+});
+
+//
+// Room & Asset Routes
+//
 app.get("/rooms", authenticate, (req, res) => {
   const rooms = findAllRooms();
 
@@ -256,7 +311,7 @@ app.post("/rooms/:roomId/assets", authenticate, (req, res) => {
 });
 
 app.get("/rooms/:roomId", authenticate, (req, res) => {
-  // covert params id string to number
+  // convert params id string to number
   const roomId = Number(req.params.roomId);
 
   // check roomId is a positive number
@@ -377,6 +432,8 @@ app.patch("/rooms/:roomId/assets/:assetId", authenticate, (req, res) => {
 
   const trimmedCondition = condition.trim();
 
+  const allowedConditions = ["good", "damaged"];
+
   // validate type is allowed
   const isValidCondition = allowedConditions.includes(trimmedCondition);
 
@@ -492,65 +549,5 @@ app.delete("/rooms/:roomId/assets/:assetId", authenticate, authorize("admin"), (
     success: true,
     message: "Asset deleted successfully",
     data: deletedAsset,
-  });
-});
-
-app.post("/auth/login", async (req, res) => {
-  const { username, password } = req.body;
-
-  if (!username) {
-    return res.status(400).json({
-      success: false,
-      message: "Username is required",
-    });
-  }
-
-  if (!password) {
-    return res.status(400).json({
-      success: false,
-      message: "Password is required",
-    });
-  }
-
-  const result = await authenticateUser(
-    db,
-    username,
-    password
-  );
-
-  if (!result.success) {
-    return res.status(401).json({
-      success: false,
-      message: "Invalid credentials",
-    });
-  }
-  req.session.user = result.user;
-  //console.log(req.session);
-  return res.status(200).json({
-    success: true,
-    data: result.user,
-  });
-});
-
-app.get("/auth/me", authenticate, (req, res) => {
-  return res.status(200).json({
-    success: true,
-    data: req.session.user,
-  });
-});
-
-app.post("/auth/logout", (req, res) => {
-  req.session.destroy((error) => {
-    if (error) {
-      return res.status(500).json({
-        success: false,
-        message: "Failed to logout",
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      message: "Logged out successfully",
-    });
   });
 });
