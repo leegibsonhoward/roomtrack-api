@@ -38,9 +38,14 @@ export function provisionRoomAssets(db) {
         requirement.type
       );
 
+      // Provisioning is idempotent.
+      // Only create the number of assets required to
+      // satisfy the expected quantity.
       const missing =
         requirement.quantity - result.count;
 
+      // Create only the missing assets for this room
+      // and asset type.
       for (let i = 0; i < missing; i++) {
         insertAsset.run(
           room.id,

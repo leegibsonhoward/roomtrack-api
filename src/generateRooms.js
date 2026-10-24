@@ -33,6 +33,8 @@ export const productionRoomRanges = [
 export function generateRooms(roomRanges) {
   const rooms = [];
 
+  // Expand room ranges into individual room
+  // records used for provisioning.
   for (const range of roomRanges) {
     for (let roomNumber = range.start; roomNumber <= range.end; roomNumber++) {
       if (range.exclude.includes(roomNumber)) {

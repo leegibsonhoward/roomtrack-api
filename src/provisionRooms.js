@@ -21,7 +21,9 @@ export function provisionRooms(db) {
     INSERT OR IGNORE INTO rooms (number)
     VALUES (?)
   `);
-
+  
+  // Create production rooms before provisioning
+  // their standard asset inventory.
   rooms.forEach((room) => {
     statement.run(room.number);
   });
