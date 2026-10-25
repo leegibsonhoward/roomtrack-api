@@ -20,9 +20,11 @@ import { authorize } from './auth/authorize.js';
 
 // Database
 import { initializeDatabase } from './db/initializaDatabase.js';
+import { ensureBootstrapAdmin } from "./ensureBootstrapAdmin.js";
 
 // Provisioning
 import { provisionRooms } from "./provisionRooms.js";
+import { verifyProvisioning } from "./verifyProvisioning.js";
 
 // RoomTrack modules
 import { checkRoomRequirements } from "./checkRoomRequirements.js";
@@ -71,6 +73,10 @@ export const db = new DatabaseSync(databasePath);
 initializeDatabase(db);
 
 provisionRooms(db);
+
+// added for production.
+ensureBootstrapAdmin(db);
+verifyProvisioning(db);
 
 //
 // Database Helpers
