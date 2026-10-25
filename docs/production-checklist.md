@@ -1,6 +1,8 @@
 # RoomTrack Production Checklist
 
-## Security
+## Project Readiness
+
+### Security
 
 - [X] SESSION_SECRET configured
 - [X] .env excluded from source control
@@ -9,13 +11,15 @@
 - [X] Authentication tested
 - [X] Authorization tested
 
-## Database
+### Documentation
 
-- [ ] roomtrack.db backed up
-- [ ] Restore procedure documented
-- [X] Admin account created
+- [X] Restore procedure documented
+- [X] README reviewed
+- [X] Deployment guide reviewed
+- [X] Backup and recovery guide reviewed
+- [X] .env.example reviewed
 
-## Verification
+### Verification
 
 - [X] npm test passes
 - [X] Login verified
@@ -23,9 +27,21 @@
 - [X] Staff permissions verified
 - [X] Admin permissions verified
 
-## Deployment
+---
+
+## Deployment Readiness
+
+### Database
+
+- [ ] Database backed up
+- [ ] Administrator account created
+- [ ] Rooms provisioned
+- [ ] Standard assets provisioned
+
+### Deployment
 
 - [ ] Production environment variables configured
 - [ ] Application starts successfully
+- [ ] Database schema initialized
 - [ ] Health endpoint responds
 - [ ] Logs reviewed after startup

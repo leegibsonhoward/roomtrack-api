@@ -9,11 +9,15 @@ The API tracks individual assets, their condition, and room requirements. RoomTr
 - Room inventory tracking
 - Individual asset tracking
 - SQLite persistence
+- Production room provisioning
+- Automatic standard asset provisioning
 - Create, retrieve, update, and delete assets
-- Track asset condition as `good` or `damaged`
+- Track asset condition as good or damaged
 - Detect missing required assets
 - Detect damaged assets
 - Calculate room completion status
+- Session-based authentication
+- Role-based authorization
 - Automatic database initialization
 - Automated unit and API integration tests
 - Bruno collection for manual API testing
@@ -39,7 +43,37 @@ cd roomtrack-api
 npm install
 ```
 
-## Running RoomTrack
+### Running RoomTrack
+
+Create a `.env` file using `.env.example` as a template.
+
+Example:
+
+```env
+PORT=3000
+DB_PATH=roomtrack.db
+SESSION_SECRET=replace-with-secure-random-secret
+```
+
+#### First-Time Setup
+
+A new database is automatically initialized with production rooms and standard room assets.
+
+Before logging in, create an administrator account:
+
+```bash
+npm run create-user
+```
+
+Example:
+
+```text
+Username: admin
+Password: ********
+Role (admin/staff): admin
+```
+
+> A newly initialized database contains provisioned rooms and standard room assets, but no user accounts. An administrator account must be created before logging in.  
 
 Start the development server:
 
@@ -75,19 +109,13 @@ The database path can be changed using the `DB_PATH` environment variable.
 
 For example, the automated API tests use an isolated in-memory SQLite database instead of the development database.
 
-### Database Initialization
+#### Database Initialization
 
 When RoomTrack starts with a new database, the application automatically creates the required database tables.
 
-The development database is initialized with three rooms:
+RoomTrack provisions production rooms automatically and seeds each room with its standard asset inventory.
 
-- 101
-- 102
-- 103
-
-Assets are not automatically seeded and can be added through the API.
-
-The initial rooms are intended for development and demonstration. Production room provisioning will be handled separately from the v1 development seed data.
+Provisioning is idempotent and can be safely executed multiple times without creating duplicate rooms or duplicate assets.
 
 ## Room Requirements
 
@@ -148,6 +176,29 @@ New assets are created with the default condition:
 ```text
 good
 ```
+
+### Authentication
+
+RoomTrack uses session-based authentication.
+
+Protected routes require a valid authenticated session.
+
+Authentication endpoints:
+
+```http
+POST /auth/login
+GET  /auth/me
+POST /auth/logout
+```
+
+RoomTrack supports the following roles:
+
+- admin
+- staff
+
+Administrator accounts can perform all supported operations.
+
+Staff accounts can view rooms and assets and update inventory information but cannot delete assets.
 
 ## API Endpoints
 
@@ -259,10 +310,12 @@ Error responses generally use:
 
 RoomTrack uses HTTP status codes including:
 
-- `200` for successful retrieval, updates, and deletion
-- `201` for successful asset creation
-- `400` for invalid input
-- `404` when a requested resource does not exist
+- 200 for successful retrieval, updates, and deletion
+- 201 for successful asset creation
+- 400 for invalid input
+- 401 for authentication failures
+- 403 for authorization failures
+- 404 when a requested resource does not exist
 
 ## Testing
 
@@ -290,6 +343,11 @@ Automated testing covers:
 - Missing assets
 - Invalid asset types
 - Invalid asset conditions
+- User authentication
+- Session management
+- Authorization rules
+- Room provisioning
+- Asset provisioning
 
 API integration tests use an isolated in-memory SQLite database and do not modify the normal `roomtrack.db` development database.
 
@@ -325,33 +383,52 @@ npm run dev
 ```text
 roomtrack-api/
 ├── src/
+│   ├── auth/
+│   ├── db/
 │   ├── app.js
 │   ├── server.js
+│   ├── provisionRooms.js
+│   ├── provisionRoomAssets.js
+│   ├── generateRooms.js
+│   ├── standardRoomRequirements.js
 │   └── checkRoomRequirements.js
+├── scripts/
+│   ├── createUser.js
+│   └── readPassword.js
 ├── test/
-│   ├── api.test.js
-│   └── checkRoomRequirements.test.js
-├── .gitignore
+├── docs/
+├── bruno/
+├── .env.example
 ├── package.json
-├── package-lock.json
 └── README.md
 ```
+
+The project also contains a Bruno collection for manual API testing and documentation for deployment, backup, and recovery.  
 
 The project also contains the Bruno API collection used for manual regression testing.
 
 ## Development Notes
 
-RoomTrack v1 uses rooms 101, 102, and 103 as its initial development room data.
+RoomTrack provisions production rooms and their standard asset inventory automatically during initialization.
 
-Production room provisioning is intentionally separate from the v1 development seed data. A future provisioning process can generate or import the complete room inventory required by a production property without changing RoomTrack's core API.
+Room provisioning and asset provisioning are idempotent and can safely be executed multiple times without creating duplicate records.
 
-Potential post-v1 improvements include:
+Potential future improvements include:
 
-- Production room provisioning
 - Structured application logging
 - Additional automated test coverage
+- Frontend user interface
+- Additional reporting and compliance features
 - Additional API functionality as requirements evolve
+
+### Documentation
+
+Additional documentation is available:
+
+- docs/deployment.md
+- docs/production-checklist.md
+- docs/backup-and-recovery.md
 
 ## Version
 
-RoomTrack v0.3.0
+RoomTrack v0.8.0

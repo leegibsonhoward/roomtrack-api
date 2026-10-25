@@ -4,8 +4,6 @@
 
 This document describes how to back up and restore the RoomTrack database and recover administrative access if required.
 
----
-
 ## Database Location
 
 Default database:
@@ -19,8 +17,6 @@ Production deployments may override the location using:
 ```env
 DB_PATH=<database-path>
 ```
-
----
 
 ## Backup Procedure
 
@@ -43,8 +39,6 @@ copy roomtrack.db backups\roomtrack-YYYY-MM-DD.db
 ```
 
 Store backups in a secure location.
-
----
 
 ## Recovery Procedure
 
@@ -73,13 +67,13 @@ Verify:
 - Login works
 - Rooms can be viewed
 - Assets can be viewed
+- Room provisioning data is present
+- Standard assets are present
 - Admin functionality works
-
----
 
 ## Admin Account Recovery
 
-If all administrator accounts are lost:
+If no administrator accounts are available, a new administrator account can be created using the user provisioning script.  
 
 Create a new administrator account:
 
@@ -101,7 +95,7 @@ Verify the new account can:
 - Access protected routes
 - Perform administrator actions
 
----
+Verify the account is visible in the users table and persists after restarting the application.
 
 ## Backup Recommendations
 
@@ -116,8 +110,6 @@ Verify the new account can:
 - Nightly automated backups
 - Off-server backup storage
 - Documented recovery testing
-
----
 
 ## Recovery Validation Checklist
 
