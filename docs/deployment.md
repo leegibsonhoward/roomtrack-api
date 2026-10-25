@@ -242,3 +242,77 @@ For production deployments:
 - Monitor application logs
 - Test restoration procedures periodically
 - Verify administrator access after deployment
+
+### Session Storage
+
+RoomTrack currently uses Express MemoryStore for session management.
+
+MemoryStore is suitable for development and small deployments but does not scale across multiple application instances.
+
+A Redis-backed session store is recommended for larger deployments.
+
+## Deployment Verification
+
+After deployment completes, review the application logs.
+
+Successful startup should report administrator provisioning:
+
+```text
+Bootstrap admin created: admin
+```
+
+or:
+
+```text
+Bootstrap admin already exists
+```
+
+Startup verification should also report:
+
+```text
+=================================
+RoomTrack Startup Verification
+=================================
+Rooms : 74
+Assets: 888
+Users : 1
+=================================
+```
+
+These values confirm that:
+
+- Database initialization completed successfully
+- Room provisioning completed successfully
+- Asset provisioning completed successfully
+- User provisioning completed successfully
+- Application startup completed successfully
+
+## Bootstrap Administrator
+
+RoomTrack supports automatic bootstrap administrator provisioning through environment variables.
+
+Required environment variables:
+
+```text
+ADMIN_USERNAME=<username>
+ADMIN_PASSWORD=<password>
+```
+
+When no administrator account exists, RoomTrack automatically creates the initial administrator account during startup.
+
+Subsequent startups detect the existing administrator account and skip bootstrap provisioning.
+
+## Production Validation Checklist
+
+Verify the following after deployment:
+
+- Application deployed successfully
+- Startup verification reports 74 rooms
+- Startup verification reports 888 assets
+- Bootstrap administrator exists
+- Authentication functions correctly
+- Protected endpoints enforce authorization rules
+- Bruno production collection executes successfully
+- No startup errors appear in application logs
+
+A successful deployment meeting all validation checks is considered production-ready for the current release.
