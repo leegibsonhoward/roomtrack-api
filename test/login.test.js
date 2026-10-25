@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 import { authenticateUser } from "../src/auth/authenticateUser.js";
 
 process.env.DB_PATH = ":memory:";
-import { db } from '../src/app.js';
+const { db } = await import('../src/app.js');
 
 beforeEach(()=>{
   db.exec(`
