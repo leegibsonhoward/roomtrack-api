@@ -6,13 +6,6 @@ info:
 http:
   method: GET
   url: localhost:3000/auth/me
-  body:
-    type: json
-    data: |-
-      {
-        "username": "lee",
-        "password": "pw"
-      }
   auth: inherit
 
 settings:
